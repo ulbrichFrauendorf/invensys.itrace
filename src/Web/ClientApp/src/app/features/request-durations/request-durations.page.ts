@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ICard, ISelect, ITable, GridData } from 'integra-ng';
+import { IButton, ICard, ISelect, ITable, GridData } from 'integra-ng';
 import {
   ApplicationDto,
   ITraceApiService,
@@ -16,7 +16,7 @@ import {
 
 @Component({
   selector: 'app-request-durations-page',
-  imports: [CommonModule, FormsModule, ICard, ISelect, ITable],
+  imports: [CommonModule, FormsModule, IButton, ICard, ISelect, ITable],
   templateUrl: './request-durations.page.html',
   styleUrl: './request-durations.page.scss',
 })
@@ -54,12 +54,7 @@ export class RequestDurationsPage implements OnInit {
   }
 
   protected selectApplication(option: ApplicationOption | null): void {
-    this.selectedApplication = option;
     this.load();
-  }
-
-  protected clearApplication(): void {
-    this.selectApplication(null);
   }
 
   protected load(): void {

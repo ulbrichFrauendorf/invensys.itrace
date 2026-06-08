@@ -12,12 +12,14 @@
         [showClear]="true"
         [fluid]="true"
         [(ngModel)]="selectedApplication"
-        (onChange)="selectApplication($event)"
-        (onClear)="clearApplication()"
+        (ngModelChange)="selectApplication($event)"
       />
-      <button class="icon-button" type="button" title="Refresh" (click)="load()">
-        <i class="pi pi-refresh"></i>
-      </button>
+      <i-button
+        icon="pi pi-refresh"
+        severity="secondary"
+        title="Refresh"
+        (clicked)="load()"
+      />
     </div>
   </header>
 

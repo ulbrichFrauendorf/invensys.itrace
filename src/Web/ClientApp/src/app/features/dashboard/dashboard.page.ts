@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ICard, IChart, ISelect, ITable, GridData, IChartData } from 'integra-ng';
+import { IButton, ICard, IChart, ISelect, ITable, GridData, IChartData } from 'integra-ng';
 import {
   ApplicationDto,
   DashboardDto,
@@ -17,7 +17,7 @@ import {
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [CommonModule, FormsModule, ICard, IChart, ISelect, ITable],
+  imports: [CommonModule, FormsModule, IButton, ICard, IChart, ISelect, ITable],
   templateUrl: './dashboard.page.html',
   styleUrl: './dashboard.page.scss',
 })
@@ -86,12 +86,7 @@ export class DashboardPage implements OnInit {
   }
 
   protected selectApplication(option: ApplicationOption | null): void {
-    this.selectedApplication = option;
     this.loadDashboard(option?.id ?? null);
-  }
-
-  protected clearApplication(): void {
-    this.selectApplication(null);
   }
 
   protected refresh(): void {

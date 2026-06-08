@@ -1,11 +1,61 @@
-:root {
+.light {
+  --color-primary: #0f766e;
+  --color-secondary: #475569;
+  --color-tertiary: #64748b;
+  --color-success: #22c55e;
+  --color-info: #0ea5e9;
+  --color-warning: #eab308;
+  --color-danger: #ef4444;
+  --color-contrast: #000000;
+  --color-contrast-inverse: #ffffff;
+  --color-text-primary: #111827;
+  --color-text-contrast: #ffffffde;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
+  --color-component-background: #ffffff;
+  --color-component-background-secondary: #ffffff;
+  --color-component-background-solid: #1e293b;
+  --color-border: #cbd5e1;
+  --color-disabled-background: #f5f5f5;
+  --color-disabled-border: #e2e8f0;
+  --color-text-disabled: #94a3b8;
   --surface-ground: #f6f8fb;
+  --surface-elevated: #ffffff;
+  --surface-section: #ffffff;
   --surface-card: #ffffff;
+  --surface-overlay: #ffffff;
   --surface-border: #dbe3ef;
-  --text-color: #111827;
-  --text-color-secondary: #64748b;
-  --primary-color: #0f766e;
-  --primary-color-text: #ffffff;
+  --surface-hover: #f1f5f9;
+}
+
+.dark {
+  --color-primary: #14b8a6;
+  --color-secondary: #cbd5e1;
+  --color-tertiary: #64748b;
+  --color-success: #4ade80;
+  --color-info: #38bdf8;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+  --color-contrast: #ffffff;
+  --color-contrast-inverse: #000000;
+  --color-text-primary: #ffffffde;
+  --color-text-contrast: #ffffffde;
+  --color-text-secondary: #cbd5e1;
+  --color-text-tertiary: #94a3b8;
+  --color-component-background: #0b121c;
+  --color-component-background-secondary: #000510;
+  --color-component-background-solid: #1e293b;
+  --color-border: #4b4e50;
+  --color-disabled-background: #1f2937;
+  --color-disabled-border: #4b4e50;
+  --color-text-disabled: #94a3b8;
+  --surface-ground: #000510;
+  --surface-elevated: #1f2937;
+  --surface-section: #111827;
+  --surface-card: #0b121c;
+  --surface-overlay: #0b121c;
+  --surface-border: #4b4e50;
+  --surface-hover: rgba(255, 255, 255, 0.03);
 }
 
 * {
@@ -14,13 +64,22 @@
 
 html,
 body {
-  background: var(--surface-ground);
-  color: var(--text-color);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   height: 100%;
   margin: 0;
+}
+
+body.light,
+body:not(.dark) {
+  background: var(--surface-ground);
+  color: var(--color-text-primary);
+}
+
+body.dark {
+  background: var(--surface-ground);
+  color: var(--color-text-primary);
 }
 
 button,

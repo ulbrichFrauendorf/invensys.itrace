@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\Invensys.ITrace.Contracts\Invensys.ITrace.Contracts.csproj" />
+    <ProjectReference Include="..\Invensys.ITrace.Contracts\Invensys.ITrace.Contracts.csproj" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,10 +19,17 @@
     <Authors>Invensys</Authors>
     <Description>Lightweight iTrace telemetry client for replacing Sentry error logging with DSN-based collector telemetry.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeProjectReferencesInPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
+
+  <Target Name="IncludeProjectReferencesInPackage" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+    </ItemGroup>
+  </Target>
 
 </Project>

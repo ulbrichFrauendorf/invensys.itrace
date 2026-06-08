@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      PACKAGE_PROJECT: src/Invensys.ITrace.Client/Invensys.ITrace.Client.csproj
+      TEST_PROJECT: tests/Invensys.ITrace.Tests/Invensys.ITrace.Tests.csproj
 
     steps:
       - name: Checkout code
@@ -30,19 +33,18 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore "${{ env.PACKAGE_PROJECT }}"
 
-      - name: Build solution
-        run: dotnet build --configuration Release --no-restore -p:Version=${VERSION}
+      - name: Build NuGet package project
+        run: dotnet build "${{ env.PACKAGE_PROJECT }}" --configuration Release --no-restore -p:Version=${VERSION}
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet test "${{ env.TEST_PROJECT }}" --configuration Release --verbosity normal
 
-      - name: Pack NuGet packages
+      - name: Pack NuGet package
         run: |
           mkdir -p ./nupkg
-          dotnet pack src/Invensys.ITrace.Contracts/Invensys.ITrace.Contracts.csproj --configuration Release --no-build --output ./nupkg -p:Version=${VERSION}
-          dotnet pack src/Invensys.ITrace.Client/Invensys.ITrace.Client.csproj --configuration Release --no-build --output ./nupkg -p:Version=${VERSION}
+          dotnet pack "${{ env.PACKAGE_PROJECT }}" --configuration Release --no-restore --output ./nupkg -p:Version=${VERSION}
 
       - name: Publish to NuGet
         env:

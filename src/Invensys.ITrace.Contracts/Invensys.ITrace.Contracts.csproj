@@ -5,6 +5,7 @@
     <Version>0.1.0</Version>
     <Authors>Invensys</Authors>
     <Description>Shared iTrace telemetry contracts for collector and client packages.</Description>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
 </Project>

@@ -1,0 +1,3 @@
+@Web_HostAddress = https://localhost:5003
+
+GET {{Web_HostAddress}}/health

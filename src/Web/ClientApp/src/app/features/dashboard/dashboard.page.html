@@ -1,0 +1,73 @@
+<section class="page-shell">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Dashboard</p>
+      <h1>Application health</h1>
+    </div>
+
+    <div class="page-actions">
+      <i-select
+        label="Application"
+        [options]="applicationOptions()"
+        optionLabel="label"
+        [showClear]="true"
+        [fluid]="true"
+        [(ngModel)]="selectedApplication"
+        (onChange)="selectApplication($event)"
+        (onClear)="clearApplication()"
+      />
+      <button class="icon-button" type="button" title="Refresh" (click)="refresh()">
+        <i class="pi pi-refresh"></i>
+      </button>
+    </div>
+  </header>
+
+  @if (dashboard(); as model) {
+    <div class="summary-grid">
+      <i-card title="Applications">
+        <strong>{{ model.applicationCount }}</strong>
+        <span>registered</span>
+      </i-card>
+      <i-card title="Errors">
+        <strong>{{ model.errorCount }}</strong>
+        <span>last 24h</span>
+      </i-card>
+      <i-card title="Request p95">
+        <strong>{{ formatMilliseconds(model.requests?.p95Ms) }}</strong>
+        <span>{{ model.requests?.count ?? 0 }} samples</span>
+      </i-card>
+      <i-card title="DB p95">
+        <strong>{{ formatMilliseconds(model.database?.p95Ms) }}</strong>
+        <span>{{ model.database?.count ?? 0 }} samples</span>
+      </i-card>
+    </div>
+
+    <section class="content-grid">
+      <i-card title="Site latency">
+        @if (charts().length > 0) {
+          <i-chart [charts]="charts()" height="22rem" />
+        } @else {
+          <div class="empty-state">No telemetry received</div>
+        }
+      </i-card>
+
+      <i-card title="Site overview">
+        <div class="health-list">
+          @for (site of model.sites ?? []; track site.applicationId) {
+            <div class="health-row">
+              <span [class]="statusClass(site)">{{ site.status }}</span>
+              <div>
+                <strong>{{ site.applicationName ?? 'Unknown' }}</strong>
+                <span>{{ site.environment ?? 'Unknown' }} / {{ site.siteName ?? 'Unknown' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </i-card>
+    </section>
+
+    <i-card title="Registered sites">
+      <i-table [grid]="siteGrid()" [sortable]="true" [striped]="true" />
+    </i-card>
+  }
+</section>

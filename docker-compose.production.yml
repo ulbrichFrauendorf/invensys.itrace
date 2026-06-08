@@ -1,0 +1,27 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: invensys-itrace-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__ITrace: Data Source=/app/data/itrace.db
+    ports:
+      - "${WEB_PORT:-8082}:8080"
+    volumes:
+      - itrace-data:/app/data
+    networks:
+      - itrace-network
+
+networks:
+  itrace-network:
+    name: itrace-network
+
+volumes:
+  itrace-data:
+    name: itrace-data

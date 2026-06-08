@@ -11,7 +11,7 @@ app.UseITrace();
 ```json
 {
   "ITrace": {
-    "CollectorEndpoint": "http://localhost:5214",
+    "CollectorEndpoint": "https://localhost:5003",
     "Dsn": "itrace://assigned-dsn@collector/site",
     "ApplicationName": "Integra Flow",
     "Environment": "Production",

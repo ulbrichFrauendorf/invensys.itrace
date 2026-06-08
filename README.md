@@ -15,7 +15,10 @@ It provides:
 
 ```text
 src/
-  Invensys.ITrace.Api/          Collector API, SQLite persistence, Angular host
+  Domain/                       iTrace domain entities
+  Application/                  Telemetry use cases and application interfaces
+  Infrastructure/               SQLite persistence, DSN generation, telemetry infrastructure
+  Web/                          Collector endpoints and Angular host
   Invensys.ITrace.Client/       NuGet package for Integra Flow and iServe
   Invensys.ITrace.Contracts/    Shared DTOs and enums
 tests/
@@ -24,20 +27,20 @@ tests/
 
 ## Run Locally
 
-Start the API:
+Start the backend:
 
 ```powershell
-dotnet run --project src\Invensys.ITrace.Api\Invensys.ITrace.Api.csproj
+dotnet run --project src\Web\Web.csproj
 ```
 
 Start the Angular dashboard:
 
 ```powershell
-cd src\Invensys.ITrace.Api\ClientApp
+cd src\Web\ClientApp
 npm start
 ```
 
-Open `http://localhost:44449`. The Angular dev server proxies `/api` and `/health` to `http://localhost:5214`.
+Open `https://localhost:44449`. The Angular dev server proxies `/api` and `/health` to `https://localhost:5003`.
 
 The API seeds DSNs for:
 
@@ -71,7 +74,7 @@ Configure each application with its assigned DSN:
 ```json
 {
   "ITrace": {
-    "CollectorEndpoint": "http://localhost:5214",
+    "CollectorEndpoint": "https://localhost:5003",
     "Dsn": "itrace://assigned-dsn@collector/site",
     "ApplicationName": "Integra Flow",
     "Environment": "Production",
@@ -104,6 +107,6 @@ builder.Services.AddDbContext<AppDbContext>((services, options) =>
 ```powershell
 dotnet build invensys.itrace.slnx
 dotnet test invensys.itrace.slnx
-cd src\Invensys.ITrace.Api\ClientApp
+cd src\Web\ClientApp
 npm run build
 ```

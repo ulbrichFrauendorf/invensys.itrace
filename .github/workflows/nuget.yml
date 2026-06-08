@@ -1,0 +1,53 @@
+name: Build and Publish NuGet Packages
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        if: github.ref_type == 'tag'
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+      - name: Set manual version
+        if: github.ref_type != 'tag'
+        run: echo "VERSION=0.1.${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore -p:Version=${VERSION}
+
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --verbosity normal
+
+      - name: Pack NuGet packages
+        run: |
+          mkdir -p ./nupkg
+          dotnet pack src/Invensys.ITrace.Contracts/Invensys.ITrace.Contracts.csproj --configuration Release --no-build --output ./nupkg -p:Version=${VERSION}
+          dotnet pack src/Invensys.ITrace.Client/Invensys.ITrace.Client.csproj --configuration Release --no-build --output ./nupkg -p:Version=${VERSION}
+
+      - name: Publish to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          for package in ./nupkg/*.nupkg; do
+            dotnet nuget push "$package" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          done

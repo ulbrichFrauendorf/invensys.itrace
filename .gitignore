@@ -2,6 +2,7 @@ bin/
 obj/
 .vs/
 .vscode/
+.codex/
 TestResults/
 logs/
 *.user
@@ -11,6 +12,7 @@ logs/
 *.db-wal
 data/
 
-src/Invensys.ITrace.Api/ClientApp/node_modules/
-src/Invensys.ITrace.Api/ClientApp/dist/
-src/Invensys.ITrace.Api/wwwroot/
+src/Invensys.ITrace.Api/
+src/Web/ClientApp/node_modules/
+src/Web/ClientApp/dist/
+src/Web/wwwroot/

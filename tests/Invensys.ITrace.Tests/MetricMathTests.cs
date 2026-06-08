@@ -1,4 +1,4 @@
-using Invensys.ITrace.Api.Services;
+using Invensys.ITrace.Application.Telemetry;
 
 namespace Invensys.ITrace.Tests;
 

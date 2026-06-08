@@ -21,7 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Invensys.ITrace.Client\Invensys.ITrace.Client.csproj" />
     <ProjectReference Include="..\..\src\Invensys.ITrace.Contracts\Invensys.ITrace.Contracts.csproj" />
-    <ProjectReference Include="..\..\src\Invensys.ITrace.Api\Invensys.ITrace.Api.csproj" />
+    <ProjectReference Include="..\..\src\Application\Application.csproj" />
   </ItemGroup>
 
 </Project>

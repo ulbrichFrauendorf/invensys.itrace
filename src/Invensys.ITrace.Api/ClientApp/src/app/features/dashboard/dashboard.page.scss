@@ -1,0 +1,142 @@
+.page-shell {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.page-header {
+  align-items: end;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.eyebrow {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+}
+
+h1 {
+  color: #111827;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.page-actions {
+  align-items: center;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(16rem, 24rem) 2.5rem;
+}
+
+.icon-button {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  color: #334155;
+  cursor: pointer;
+  display: inline-flex;
+  height: 2.5rem;
+  justify-content: center;
+  width: 2.5rem;
+}
+
+.summary-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.summary-grid strong {
+  color: #111827;
+  display: block;
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.summary-grid span {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.content-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
+}
+
+.health-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.health-row {
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 6rem 1fr;
+  padding: 0.75rem 0;
+}
+
+.health-row div {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.health-row span:last-child {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.health-pill {
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.625rem;
+  text-align: center;
+}
+
+.health-pill--healthy {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.health-pill--degraded {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.health-pill--offline {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.empty-state {
+  align-items: center;
+  color: #64748b;
+  display: flex;
+  min-height: 18rem;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .page-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .page-actions {
+    grid-template-columns: 1fr 2.5rem;
+  }
+
+  .summary-grid,
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}

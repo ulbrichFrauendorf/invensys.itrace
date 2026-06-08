@@ -1,0 +1,34 @@
+<section class="page-shell">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Requests</p>
+      <h1>Request durations</h1>
+    </div>
+    <div class="page-actions">
+      <i-select
+        label="Application"
+        [options]="applicationOptions()"
+        optionLabel="label"
+        [showClear]="true"
+        [fluid]="true"
+        [(ngModel)]="selectedApplication"
+        (onChange)="selectApplication($event)"
+        (onClear)="clearApplication()"
+      />
+      <button class="icon-button" type="button" title="Refresh" (click)="load()">
+        <i class="pi pi-refresh"></i>
+      </button>
+    </div>
+  </header>
+
+  <i-card title="HTTP timings">
+    <i-table
+      [grid]="grid()"
+      [sortable]="true"
+      [globalFilter]="true"
+      [striped]="true"
+      [scrollable]="true"
+      height="42rem"
+    />
+  </i-card>
+</section>

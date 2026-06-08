@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Invensys.ITrace.Contracts</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Invensys</Authors>
+    <Description>Shared iTrace telemetry contracts for collector and client packages.</Description>
+  </PropertyGroup>
+
+</Project>

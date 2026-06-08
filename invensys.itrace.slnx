@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Invensys.ITrace.Api/Invensys.ITrace.Api.csproj" />
+    <Project Path="src/Invensys.ITrace.Client/Invensys.ITrace.Client.csproj" />
+    <Project Path="src/Invensys.ITrace.Contracts/Invensys.ITrace.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Invensys.ITrace.Tests/Invensys.ITrace.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,36 @@
+<section class="page-shell">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Applications</p>
+      <h1>DSN assignments</h1>
+    </div>
+  </header>
+
+  <section class="form-grid">
+    <i-card title="Register application">
+      <form [formGroup]="form" (ngSubmit)="save()" class="registration-form">
+        <i-input-text label="Application" formControlName="name" [fluid]="true" />
+        <i-input-text label="Environment" formControlName="environment" [fluid]="true" />
+        <i-input-text label="Site" formControlName="siteName" [fluid]="true" />
+        <i-input-text label="Description" formControlName="description" [fluid]="true" />
+
+        <i-button type="submit" icon="pi pi-key" [loading]="saving()">Assign DSN</i-button>
+      </form>
+    </i-card>
+
+    <i-card title="Latest DSN">
+      @if (lastCreatedDsn(); as dsn) {
+        <div class="dsn-box">
+          <code>{{ dsn }}</code>
+          <i-button icon="pi pi-copy" severity="secondary" (clicked)="copyLastDsn()">Copy</i-button>
+        </div>
+      } @else {
+        <div class="empty-state">No new DSN in this session</div>
+      }
+    </i-card>
+  </section>
+
+  <i-card title="Registered applications">
+    <i-table [grid]="grid()" [sortable]="true" [globalFilter]="true" [striped]="true" />
+  </i-card>
+</section>

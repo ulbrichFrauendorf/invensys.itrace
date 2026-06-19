@@ -18,7 +18,7 @@
       <i-button
         icon="pi pi-refresh"
         severity="secondary"
-        title="Refresh"
+        iTooltip="Refresh"
         (clicked)="refresh()"
       />
     </div>
@@ -49,7 +49,7 @@
         @if (charts().length > 0) {
           <i-chart [charts]="charts()" height="22rem" />
         } @else {
-          <div class="empty-state">No telemetry received</div>
+          <i-no-content icon="pi pi-chart-bar" message="No telemetry received" />
         }
       </i-card>
 
@@ -57,7 +57,11 @@
         <div class="health-list">
           @for (site of model.sites ?? []; track site.applicationId) {
             <div class="health-row">
-              <span [class]="statusClass(site)">{{ site.status }}</span>
+              <i-tag
+                [value]="site.status ?? 'Offline'"
+                [severity]="statusSeverity(site)"
+                [rounded]="true"
+              />
               <div>
                 <strong>{{ site.applicationName ?? 'Unknown' }}</strong>
                 <span>{{ site.environment ?? 'Unknown' }} / {{ site.siteName ?? 'Unknown' }}</span>

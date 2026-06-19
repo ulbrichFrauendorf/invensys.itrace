@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { LayoutComponent, LayoutConfig, MenuModel } from 'integra-ng';
+import { ITag, LayoutComponent, LayoutConfig, MenuModel } from 'integra-ng';
 
 @Component({
   selector: 'app-root',
-  imports: [LayoutComponent],
+  imports: [LayoutComponent, ITag],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

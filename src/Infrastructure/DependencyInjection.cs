@@ -19,10 +19,10 @@ public static class DependencyInjection
         IHostEnvironment environment)
     {
         var connectionString = configuration.GetConnectionString("ITrace")
-            ?? "Data Source=data/itrace.db";
+            ?? throw new InvalidOperationException("Connection string 'ITrace' not found.");
 
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite(connectionString));
+            options.UseSqlServer(connectionString));
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<ApplicationDbContextInitialiser>();

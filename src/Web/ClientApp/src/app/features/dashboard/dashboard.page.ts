@@ -1,7 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { IButton, ICard, IChart, ISelect, ITable, GridData, IChartData } from 'integra-ng';
+import {
+  GridData,
+  IButton,
+  ICard,
+  IChart,
+  IChartData,
+  ISelect,
+  ITable,
+  ITag,
+  NoContentComponent,
+  TooltipDirective,
+} from 'integra-ng';
 import {
   ApplicationDto,
   DashboardDto,
@@ -15,9 +26,22 @@ import {
   toApplicationOptions,
 } from '../../shared/application-selector';
 
+type TagSeverity = 'success' | 'warning' | 'danger';
+
 @Component({
   selector: 'app-dashboard-page',
-  imports: [CommonModule, FormsModule, IButton, ICard, IChart, ISelect, ITable],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IButton,
+    ICard,
+    IChart,
+    ISelect,
+    ITable,
+    ITag,
+    NoContentComponent,
+    TooltipDirective,
+  ],
   templateUrl: './dashboard.page.html',
   styleUrl: './dashboard.page.scss',
 })
@@ -97,8 +121,18 @@ export class DashboardPage implements OnInit {
     return formatMilliseconds(value);
   }
 
-  protected statusClass(site: SiteHealthDto): string {
-    return `health-pill health-pill--${(site.status ?? 'offline').toLowerCase()}`;
+  protected statusSeverity(site: SiteHealthDto): TagSeverity {
+    const status = (site.status ?? 'offline').toLowerCase();
+
+    if (status === 'healthy') {
+      return 'success';
+    }
+
+    if (status === 'degraded') {
+      return 'warning';
+    }
+
+    return 'danger';
   }
 
   private loadApplications(): void {

@@ -25,7 +25,7 @@
           <i-button icon="pi pi-copy" severity="secondary" (clicked)="copyLastDsn()">Copy</i-button>
         </div>
       } @else {
-        <div class="empty-state">No new DSN in this session</div>
+        <i-no-content icon="pi pi-key" message="No new DSN in this session" />
       }
     </i-card>
   </section>

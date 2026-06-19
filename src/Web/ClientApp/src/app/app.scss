@@ -1,17 +1,5 @@
 .collector-state {
   align-items: center;
-  color: var(--color-text-primary, #334155);
   display: inline-flex;
-  font-size: 0.875rem;
-  gap: 0.5rem;
   white-space: nowrap;
-}
-
-.collector-state__dot {
-  background: #16a34a;
-  border-radius: 999px;
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
-  display: inline-block;
-  height: 0.625rem;
-  width: 0.625rem;
 }

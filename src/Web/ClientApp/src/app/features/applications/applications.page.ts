@@ -1,7 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IButton, ICard, IInputText, ITable, GridData } from 'integra-ng';
+import {
+  GridData,
+  IButton,
+  ICard,
+  IInputText,
+  ITable,
+  NoContentComponent,
+} from 'integra-ng';
 import {
   ApplicationDto,
   ITraceApiService,
@@ -11,7 +18,15 @@ import { formatDateTime } from '../../shared/application-selector';
 
 @Component({
   selector: 'app-applications-page',
-  imports: [CommonModule, ReactiveFormsModule, IButton, ICard, IInputText, ITable],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IButton,
+    ICard,
+    IInputText,
+    ITable,
+    NoContentComponent,
+  ],
   templateUrl: './applications.page.html',
   styleUrl: './applications.page.scss',
 })

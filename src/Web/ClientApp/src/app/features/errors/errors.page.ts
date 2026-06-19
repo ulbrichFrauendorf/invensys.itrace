@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { IButton, ICard, ISelect, ITable, GridData } from 'integra-ng';
+import { GridData, IButton, ICard, ISelect, ITable, TooltipDirective } from 'integra-ng';
 import {
   ApplicationDto,
   ITraceApiService,
@@ -15,7 +15,7 @@ import {
 
 @Component({
   selector: 'app-errors-page',
-  imports: [CommonModule, FormsModule, IButton, ICard, ISelect, ITable],
+  imports: [CommonModule, FormsModule, IButton, ICard, ISelect, ITable, TooltipDirective],
   templateUrl: './errors.page.html',
   styleUrl: './errors.page.scss',
 })

@@ -1,4 +1,18 @@
 services:
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: ${MSSQL_PID:-Express}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    ports:
+      - "${SQL_PORT:-1433}:1433"
+    volumes:
+      - itrace-sql-data:/var/opt/mssql
+    networks:
+      - itrace-network
+
   app:
     build:
       context: .
@@ -10,11 +24,11 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__ITrace: Data Source=/app/data/itrace.db
+      ConnectionStrings__ITrace: Server=sql,1433;Database=invensys.itrace;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true
+    depends_on:
+      - sql
     ports:
       - "${WEB_PORT:-8082}:8080"
-    volumes:
-      - itrace-data:/app/data
     networks:
       - itrace-network
 
@@ -23,5 +37,5 @@ networks:
     name: itrace-network
 
 volumes:
-  itrace-data:
-    name: itrace-data
+  itrace-sql-data:
+    name: itrace-sql-data

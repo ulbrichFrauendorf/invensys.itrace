@@ -17,7 +17,7 @@ It provides:
 src/
   Domain/                       iTrace domain entities
   Application/                  Telemetry use cases and application interfaces
-  Infrastructure/               SQLite persistence, DSN generation, telemetry infrastructure
+  Infrastructure/               SQL Server persistence, DSN generation, telemetry infrastructure
   Web/                          Collector endpoints and Angular host
   Invensys.ITrace.Client/       NuGet package for Integra Flow and iServe
   Invensys.ITrace.Contracts/    Shared DTOs and enums
@@ -32,6 +32,14 @@ Start the backend:
 ```powershell
 dotnet run --project src\Web\Web.csproj
 ```
+
+The backend uses SQL Server. By default it connects to:
+
+```text
+Server=.;Database=invensys.itrace;Integrated Security=SSPI;TrustServerCertificate=True;MultipleActiveResultSets=true
+```
+
+On startup the API automatically applies pending EF Core migrations and then seeds the configured DSNs.
 
 Start the Angular dashboard:
 
@@ -48,6 +56,26 @@ The API seeds DSNs for:
 - `iServe / Production / Default`
 
 Additional DSNs can be created from the `Applications` page.
+
+## DB Migrations
+
+Add a migration:
+
+```powershell
+dotnet ef migrations add "SampleMigration" --project src\Infrastructure --startup-project src\Web --output-dir Data\Migrations --context ApplicationDbContext
+```
+
+Remove the last migration:
+
+```powershell
+dotnet ef migrations remove --project src\Infrastructure --startup-project src\Web --context ApplicationDbContext
+```
+
+Apply migrations manually when needed:
+
+```powershell
+dotnet ef database update --project src\Infrastructure --startup-project src\Web --context ApplicationDbContext
+```
 
 ## Package Integra Flow and iServe
 

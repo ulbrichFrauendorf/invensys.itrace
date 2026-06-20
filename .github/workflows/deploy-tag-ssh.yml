@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: itrace-tag-deploy
+  group: production-deploy-${{ github.repository }}
   cancel-in-progress: true
 
 jobs:
@@ -47,21 +47,38 @@ jobs:
           timeout: 120s
           command_timeout: 60m
           debug: true
-          envs: VERSION
+          envs: VERSION,MSSQL_SA_PASSWORD
           script: |
             set -euo pipefail
 
-            echo "=== Deploying iTrace ${VERSION} ==="
+            APP_NAME="${{ secrets.DEPLOY_APP_NAME }}"
+            DEPLOY_APP_PATH="${{ secrets.DEPLOY_APP_PATH }}"
+
+            echo "=== Deploying ${APP_NAME} ${VERSION} ==="
 
             if [ "$(whoami)" != "github-actions" ]; then
               echo "DEPLOY_SSH_USER must be github-actions."
               exit 1
             fi
 
-            DEPLOY_APP_PATH="${{ secrets.DEPLOY_APP_PATH }}"
-            if [ "$DEPLOY_APP_PATH" != "/home/github-actions/itrace" ]; then
-              echo "DEPLOY_APP_PATH must be /home/github-actions/itrace."
+            if [ -z "$APP_NAME" ] || [ -z "$DEPLOY_APP_PATH" ]; then
+              echo "DEPLOY_APP_NAME and DEPLOY_APP_PATH are required."
               exit 1
+            fi
+
+            case "$DEPLOY_APP_PATH" in
+              /home/github-actions/sites/*) ;;
+              *)
+                echo "DEPLOY_APP_PATH must be under /home/github-actions/sites/."
+                exit 1
+                ;;
+            esac
+
+            case "$APP_NAME" in
+              *[!a-zA-Z0-9._-]*|"")
+              echo "DEPLOY_APP_NAME may only contain letters, numbers, dot, underscore, and dash."
+              exit 1
+              ;;
             fi
 
             mkdir -p "$DEPLOY_APP_PATH"
@@ -73,7 +90,7 @@ jobs:
             chmod 700 "$DOCKER_CONFIG"
 
             if [ ! -d ".git" ]; then
-              git clone git@github.com:${{ github.repository }}.git .
+              git clone "git@github.com-${APP_NAME}:${{ github.repository }}.git" .
             fi
 
             git fetch --all --tags --prune
@@ -91,10 +108,12 @@ jobs:
             printf "%s='%s'\n" ASPNETCORE_ENVIRONMENT Production >> .env
             printf "%s='%s'\n" WEB_PORT 8082 >> .env
             printf "%s='%s'\n" IMAGE_TAG "${VERSION}" >> .env
+            printf "%s='%s'\n" MSSQL_SA_PASSWORD "${MSSQL_SA_PASSWORD}" >> .env
             chmod 600 .env
 
             bash scripts/deploy.sh
 
-            echo "=== Deployment of iTrace ${VERSION} complete ==="
+            echo "=== Deployment of ${APP_NAME} ${VERSION} complete ==="
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
+          MSSQL_SA_PASSWORD: ${{ secrets.MSSQL_SA_PASSWORD }}

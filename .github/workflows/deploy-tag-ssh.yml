@@ -47,12 +47,9 @@ jobs:
           timeout: 120s
           command_timeout: 60m
           debug: true
-          envs: VERSION,MSSQL_SA_PASSWORD
+          envs: VERSION,MSSQL_SA_PASSWORD,APP_NAME,DEPLOY_APP_PATH
           script: |
             set -euo pipefail
-
-            APP_NAME="${{ secrets.DEPLOY_APP_NAME }}"
-            DEPLOY_APP_PATH="${{ secrets.DEPLOY_APP_PATH }}"
 
             echo "=== Deploying ${APP_NAME} ${VERSION} ==="
 
@@ -66,20 +63,16 @@ jobs:
               exit 1
             fi
 
-            case "$DEPLOY_APP_PATH" in
-              /home/github-actions/sites/*) ;;
-              *)
-                echo "DEPLOY_APP_PATH must be under /home/github-actions/sites/."
-                exit 1
-                ;;
-            esac
+            path_prefix="/home/github-actions/sites/"
+            if [ "${DEPLOY_APP_PATH#"$path_prefix"}" = "$DEPLOY_APP_PATH" ]; then
+              echo "DEPLOY_APP_PATH must be under /home/github-actions/sites/."
+              exit 1
+            fi
 
-            case "$APP_NAME" in
-              *[!a-zA-Z0-9._-]*|"")
-                echo "DEPLOY_APP_NAME may only contain letters, numbers, dot, underscore, and dash."
-                exit 1
-                ;;
-            esac
+            if ! printf '%s' "$APP_NAME" | grep -Eq '^[A-Za-z0-9._-]+$'; then
+              echo "DEPLOY_APP_NAME may only contain letters, numbers, dot, underscore, and dash."
+              exit 1
+            fi
 
             mkdir -p "$DEPLOY_APP_PATH"
             cd "$DEPLOY_APP_PATH"
@@ -117,3 +110,5 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
           MSSQL_SA_PASSWORD: ${{ secrets.MSSQL_SA_PASSWORD }}
+          APP_NAME: ${{ secrets.DEPLOY_APP_NAME }}
+          DEPLOY_APP_PATH: ${{ secrets.DEPLOY_APP_PATH }}

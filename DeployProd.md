@@ -302,6 +302,8 @@ jobs:
           IMAGE_TAG: ${{ steps.deploy_ref.outputs.IMAGE_TAG }}
           WEB_PORT: ${{ secrets.DEPLOY_WEB_PORT }}
           MSSQL_SA_PASSWORD: ${{ secrets.MSSQL_SA_PASSWORD }}
+          APP_NAME: ${{ secrets.DEPLOY_APP_NAME }}
+          APP_PATH: ${{ secrets.DEPLOY_APP_PATH }}
         with:
           host: ${{ secrets.DEPLOY_SSH_HOST }}
           username: ${{ secrets.DEPLOY_SSH_USER }}
@@ -311,12 +313,10 @@ jobs:
           script_stop: true
           timeout: 120s
           command_timeout: 60m
-          envs: DEPLOY_REF,IMAGE_TAG,WEB_PORT,MSSQL_SA_PASSWORD
+          envs: DEPLOY_REF,IMAGE_TAG,WEB_PORT,MSSQL_SA_PASSWORD,APP_NAME,APP_PATH
           script: |
             set -euo pipefail
 
-            APP_NAME="${{ secrets.DEPLOY_APP_NAME }}"
-            APP_PATH="${{ secrets.DEPLOY_APP_PATH }}"
             REPOSITORY="${{ github.repository }}"
 
             if [ "$(whoami)" != "github-actions" ]; then
@@ -326,6 +326,17 @@ jobs:
 
             if [ -z "$APP_NAME" ] || [ -z "$APP_PATH" ]; then
               echo "DEPLOY_APP_NAME and DEPLOY_APP_PATH are required."
+              exit 1
+            fi
+
+            path_prefix="/home/github-actions/sites/"
+            if [ "${APP_PATH#"$path_prefix"}" = "$APP_PATH" ]; then
+              echo "DEPLOY_APP_PATH must be under /home/github-actions/sites/."
+              exit 1
+            fi
+
+            if ! printf '%s' "$APP_NAME" | grep -Eq '^[A-Za-z0-9._-]+$'; then
+              echo "DEPLOY_APP_NAME may only contain letters, numbers, dot, underscore, and dash."
               exit 1
             fi
 

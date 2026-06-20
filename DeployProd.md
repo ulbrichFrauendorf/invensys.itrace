@@ -344,6 +344,13 @@ jobs:
             cd "$APP_PATH"
 
             if [ ! -d ".git" ]; then
+              rm -rf .docker .env
+              if [ -n "$(find . -mindepth 1 -maxdepth 1 -print -quit)" ]; then
+                echo "DEPLOY_APP_PATH exists but is not a git checkout: $APP_PATH"
+                echo "Move or clean this directory, then rerun the deployment."
+                ls -la
+                exit 1
+              fi
               git clone "git@github.com-${APP_NAME}:${REPOSITORY}.git" .
             fi
 

@@ -77,14 +77,21 @@ jobs:
             mkdir -p "$DEPLOY_APP_PATH"
             cd "$DEPLOY_APP_PATH"
 
+            if [ ! -d ".git" ]; then
+              rm -rf .docker .env
+              if [ -n "$(find . -mindepth 1 -maxdepth 1 -print -quit)" ]; then
+                echo "DEPLOY_APP_PATH exists but is not a git checkout: $DEPLOY_APP_PATH"
+                echo "Move or clean this directory, then rerun the deployment."
+                ls -la
+                exit 1
+              fi
+              git clone "git@github.com-${APP_NAME}:${{ github.repository }}.git" .
+            fi
+
             export HOME="/home/github-actions"
             export DOCKER_CONFIG="$DEPLOY_APP_PATH/.docker"
             mkdir -p "$DOCKER_CONFIG"
             chmod 700 "$DOCKER_CONFIG"
-
-            if [ ! -d ".git" ]; then
-              git clone "git@github.com-${APP_NAME}:${{ github.repository }}.git" .
-            fi
 
             git fetch --all --tags --prune
             git checkout -f main

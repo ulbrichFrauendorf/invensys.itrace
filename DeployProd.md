@@ -140,29 +140,7 @@ Key: paste the public key
 Allow write access: off
 ```
 
-## 4. Clone The Site
-
-Run as `root` on the Ubuntu server.
-
-```bash
-APP_NAME="itrace"
-GITHUB_REPO="ulbrichFrauendorf/invensys.itrace"
-APP_PATH="/home/github-actions/sites/${APP_NAME}"
-BRANCH="main"
-
-mkdir -p /home/github-actions/sites
-chown github-actions:github-actions /home/github-actions/sites
-
-if [ ! -d "${APP_PATH}/.git" ]; then
-  sudo -u github-actions git clone "git@github.com-${APP_NAME}:${GITHUB_REPO}.git" "${APP_PATH}"
-fi
-
-sudo -u github-actions git -C "${APP_PATH}" fetch --all --tags --prune
-sudo -u github-actions git -C "${APP_PATH}" checkout "${BRANCH}"
-sudo -u github-actions git -C "${APP_PATH}" pull origin "${BRANCH}"
-```
-
-## 5. Add GitHub Repository Secrets
+## 4. Add GitHub Repository Secrets
 
 In each GitHub repository, open:
 
@@ -212,176 +190,7 @@ docker compose --profile local-sql -f docker-compose.production.yml up -d --remo
 
 For your preferred setup, do not use the `local-sql` profile.
 
-## 6. Add The Repository Deploy Script
-
-Create `scripts/deploy-prod.sh` in the repository.
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.production.yml}"
-
-if docker compose version >/dev/null 2>&1; then
-  docker compose -f "$COMPOSE_FILE" pull --ignore-pull-failures
-  docker compose -f "$COMPOSE_FILE" build --pull
-  docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
-  docker compose -f "$COMPOSE_FILE" ps
-else
-  docker-compose -f "$COMPOSE_FILE" pull --ignore-pull-failures
-  docker-compose -f "$COMPOSE_FILE" build --pull
-  docker-compose -f "$COMPOSE_FILE" up -d --remove-orphans
-  docker-compose -f "$COMPOSE_FILE" ps
-fi
-```
-
-Make it executable and commit it:
-
-```bash
-git add scripts/deploy-prod.sh
-git update-index --chmod=+x scripts/deploy-prod.sh
-git commit -m "Add production deploy script"
-git push
-```
-
-## 7. Add The GitHub Actions Workflow
-
-Create `.github/workflows/deploy-prod.yml` in the repository.
-
-```yaml
-name: Deploy Production
-
-on:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: "Branch, tag, or commit to deploy"
-        required: false
-        default: "main"
-
-concurrency:
-  group: production-deploy-${{ github.repository }}
-  cancel-in-progress: true
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Select deployment ref
-        id: deploy_ref
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "REF=${{ inputs.ref }}" >> "$GITHUB_OUTPUT"
-            echo "IMAGE_TAG=${{ inputs.ref }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "REF=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-            echo "IMAGE_TAG=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Test SSH port
-        env:
-          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
-          SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          nc -vz -w 10 "$SSH_HOST" "$SSH_PORT"
-
-      - name: Deploy on server
-        uses: appleboy/ssh-action@v1.2.0
-        env:
-          DEPLOY_REF: ${{ steps.deploy_ref.outputs.REF }}
-          IMAGE_TAG: ${{ steps.deploy_ref.outputs.IMAGE_TAG }}
-          WEB_PORT: ${{ secrets.DEPLOY_WEB_PORT }}
-          MSSQL_SA_PASSWORD: ${{ secrets.MSSQL_SA_PASSWORD }}
-          APP_NAME: ${{ secrets.DEPLOY_APP_NAME }}
-          APP_PATH: ${{ secrets.DEPLOY_APP_PATH }}
-        with:
-          host: ${{ secrets.DEPLOY_SSH_HOST }}
-          username: ${{ secrets.DEPLOY_SSH_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          passphrase: ${{ secrets.DEPLOY_SSH_PASSPHRASE }}
-          port: ${{ secrets.DEPLOY_SSH_PORT }}
-          script_stop: true
-          timeout: 120s
-          command_timeout: 60m
-          envs: DEPLOY_REF,IMAGE_TAG,WEB_PORT,MSSQL_SA_PASSWORD,APP_NAME,APP_PATH
-          script: |
-            set -euo pipefail
-
-            REPOSITORY="${{ github.repository }}"
-
-            if [ "$(whoami)" != "github-actions" ]; then
-              echo "This workflow must SSH as github-actions."
-              exit 1
-            fi
-
-            if [ -z "$APP_NAME" ] || [ -z "$APP_PATH" ]; then
-              echo "DEPLOY_APP_NAME and DEPLOY_APP_PATH are required."
-              exit 1
-            fi
-
-            path_prefix="/home/github-actions/sites/"
-            if [ "${APP_PATH#"$path_prefix"}" = "$APP_PATH" ]; then
-              echo "DEPLOY_APP_PATH must be under /home/github-actions/sites/."
-              exit 1
-            fi
-
-            if ! printf '%s' "$APP_NAME" | grep -Eq '^[A-Za-z0-9._-]+$'; then
-              echo "DEPLOY_APP_NAME may only contain letters, numbers, dot, underscore, and dash."
-              exit 1
-            fi
-
-            mkdir -p "$APP_PATH"
-            cd "$APP_PATH"
-
-            if [ ! -d ".git" ]; then
-              rm -rf .docker .env
-              if [ -n "$(find . -mindepth 1 -maxdepth 1 -print -quit)" ]; then
-                echo "DEPLOY_APP_PATH exists but is not a git checkout: $APP_PATH"
-                echo "Move or clean this directory, then rerun the deployment."
-                ls -la
-                exit 1
-              fi
-              git clone "git@github.com-${APP_NAME}:${REPOSITORY}.git" .
-            fi
-
-            git fetch --all --tags --prune
-            if git rev-parse "refs/tags/${DEPLOY_REF}" >/dev/null 2>&1; then
-              git checkout "tags/${DEPLOY_REF}" -f
-            else
-              git checkout -f "$DEPLOY_REF"
-            fi
-
-            umask 077
-            {
-              echo "ASPNETCORE_ENVIRONMENT=Production"
-              echo "WEB_PORT=${WEB_PORT}"
-              echo "IMAGE_TAG=${IMAGE_TAG}"
-              echo "MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}"
-            } > .env
-
-            chmod +x scripts/deploy-prod.sh
-            ./scripts/deploy-prod.sh
-```
-
-Commit it:
-
-```bash
-git add .github/workflows/deploy-prod.yml
-git commit -m "Add production deployment workflow"
-git push
-```
-
-## 8. Deploy A Release
+## 5. Deploy A Release
 
 Create and push a version tag:
 
@@ -402,81 +211,71 @@ GitHub -> Actions -> Deploy Production -> Run workflow
 
 Use `main`, a tag like `v1.0.0`, or a commit SHA as the `ref`.
 
-## 9. Verify The Site
+## 6. Add Host Nginx And SSL
 
 Run as `root` on the Ubuntu server.
 
-```bash
-APP_NAME="itrace"
-APP_PATH="/home/github-actions/sites/${APP_NAME}"
+Set the public domain for this site:
 
-sudo -u github-actions docker compose -f "${APP_PATH}/docker-compose.production.yml" ps
-sudo -u github-actions docker compose -f "${APP_PATH}/docker-compose.production.yml" logs --tail=100 app
+```bash
+DOMAIN="itrace.invensys.web.za"
+WEB_PORT="8082"
 ```
+
+Make sure the domain already points to this server before issuing the certificate.
+
+Install nginx and Certbot if they are not already installed:
+
+```bash
+apt update
+apt install -y nginx certbot python3-certbot-nginx
+```
+
+Create the nginx site:
+
+```bash
+cat > "/etc/nginx/sites-available/${DOMAIN}" <<EOF
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    location / {
+        proxy_pass http://127.0.0.1:${WEB_PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+```
+
+Enable the site:
+
+```bash
+ln -s "/etc/nginx/sites-available/${DOMAIN}" "/etc/nginx/sites-enabled/${DOMAIN}"
+nginx -t
+systemctl reload nginx
+```
+
+Issue and install the TLS certificate:
+
+```bash
+certbot --nginx -d "${DOMAIN}"
+```
+
+After Certbot updates nginx, verify the public site:
+
+```bash
+curl -I "https://${DOMAIN}/"
+curl -I "https://${DOMAIN}/health"
+```
+
+## 7. Verify The Site
 
 Check the exposed port:
 
 ```bash
 curl -I http://localhost:8082
 ```
-
-## 10. Add Another Site
-
-Repeat these sections for each additional site:
-
-```text
-3. Create One GitHub Deploy Key For The Site
-4. Clone The Site
-5. Add GitHub Repository Secrets
-8. Deploy A Release
-9. Verify The Site
-```
-
-Reuse these GitHub Actions secrets across sites on the same server:
-
-```text
-DEPLOY_SSH_HOST
-DEPLOY_SSH_PORT
-DEPLOY_SSH_USER
-DEPLOY_SSH_KEY
-DEPLOY_SSH_PASSPHRASE
-```
-
-Use unique values for each site:
-
-```text
-DEPLOY_APP_NAME
-DEPLOY_APP_PATH
-DEPLOY_WEB_PORT
-GitHub deploy key
-Application secrets
-```
-
-## 11. Common Checks
-
-Test GitHub Actions SSH access from your workstation:
-
-```bash
-ssh -i ./github-actions-server-deploy github-actions@your-server-host-or-ip
-```
-
-Test repository clone access on the server as `root`:
-
-```bash
-APP_NAME="itrace"
-sudo -u github-actions ssh -T "git@github.com-${APP_NAME}"
-```
-
-Check Docker access:
-
-```bash
-sudo -u github-actions docker ps
-```
-
-Check ownership:
-
-```bash
-ls -ld /home/github-actions /home/github-actions/.ssh /home/github-actions/sites
-```
-
-Expected owner for `/home/github-actions/.ssh` and `/home/github-actions/sites` is `github-actions:github-actions`.

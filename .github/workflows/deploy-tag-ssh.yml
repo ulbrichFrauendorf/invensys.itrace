@@ -76,10 +76,10 @@ jobs:
 
             case "$APP_NAME" in
               *[!a-zA-Z0-9._-]*|"")
-              echo "DEPLOY_APP_NAME may only contain letters, numbers, dot, underscore, and dash."
-              exit 1
-              ;;
-            fi
+                echo "DEPLOY_APP_NAME may only contain letters, numbers, dot, underscore, and dash."
+                exit 1
+                ;;
+            esac
 
             mkdir -p "$DEPLOY_APP_PATH"
             cd "$DEPLOY_APP_PATH"

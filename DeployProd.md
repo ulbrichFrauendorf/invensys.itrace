@@ -355,7 +355,11 @@ jobs:
             fi
 
             git fetch --all --tags --prune
-            git checkout -f "$DEPLOY_REF"
+            if git rev-parse "refs/tags/${DEPLOY_REF}" >/dev/null 2>&1; then
+              git checkout "tags/${DEPLOY_REF}" -f
+            else
+              git checkout -f "$DEPLOY_REF"
+            fi
 
             umask 077
             {

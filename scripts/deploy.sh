@@ -56,4 +56,12 @@ if [ "$attempt" -gt 60 ]; then
 	exit 1
 fi
 
+performance_counters_url="http://localhost:${web_port}/api/performance-counters?intervalMinutes=5"
+echo "Checking performance counters endpoint at ${performance_counters_url}"
+if ! curl -fsS "$performance_counters_url" >/dev/null; then
+	echo "Performance counters endpoint check failed at ${performance_counters_url}"
+	docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs --tail=200 app
+	exit 1
+fi
+
 docker image prune -f

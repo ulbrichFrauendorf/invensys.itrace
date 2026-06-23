@@ -31,6 +31,8 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "${WEB_PORT:-8082}:8080"
+    volumes:
+      - "${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock:ro"
     networks:
       - itrace-network
 

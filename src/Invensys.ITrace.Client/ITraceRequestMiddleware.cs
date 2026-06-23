@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
@@ -16,6 +17,16 @@ internal sealed class ITraceRequestMiddleware(
         try
         {
             await next(context);
+
+            exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+            if (exception is not null)
+            {
+                await telemetryClient.TrackErrorAsync(
+                    exception,
+                    ResolveRoute(context),
+                    BuildRequestAttributes(context),
+                    CancellationToken.None);
+            }
         }
         catch (Exception ex)
         {
@@ -24,7 +35,7 @@ internal sealed class ITraceRequestMiddleware(
                 ex,
                 ResolveRoute(context),
                 BuildRequestAttributes(context),
-                context.RequestAborted);
+                CancellationToken.None);
             throw;
         }
         finally

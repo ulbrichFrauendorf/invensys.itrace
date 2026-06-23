@@ -1,4 +1,5 @@
 using Invensys.ITrace.Application.Common.Interfaces;
+using Invensys.ITrace.Application.PerformanceCounters;
 using Invensys.ITrace.Infrastructure.Data;
 using Invensys.ITrace.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,8 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<ApplicationDbContextInitialiser>();
         services.AddSingleton<IDsnGenerator, DsnGenerator>();
+        services.Configure<PerformanceCounterOptions>(configuration.GetSection("ITrace:PerformanceCounters"));
+        services.AddHostedService<PerformanceCounterCollectorHostedService>();
 
         services.AddCors(options =>
         {

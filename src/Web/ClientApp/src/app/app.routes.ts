@@ -26,6 +26,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/db-durations/db-durations.page').then((m) => m.DbDurationsPage),
   },
+  {
+    path: 'performance-counters',
+    loadComponent: () =>
+      import('./features/performance-counters/performance-counters.page').then((m) => m.PerformanceCountersPage),
+  },
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
   { path: '**', redirectTo: 'dashboard' },
 ];

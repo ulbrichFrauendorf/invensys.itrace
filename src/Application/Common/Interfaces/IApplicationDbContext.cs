@@ -9,5 +9,9 @@ public interface IApplicationDbContext
 
     DbSet<TelemetryRecord> TelemetryRecords { get; }
 
+    DbSet<PerformanceCounterSample> PerformanceCounterSamples { get; }
+
+    DbSet<PerformanceCounterDailySummary> PerformanceCounterDailySummaries { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

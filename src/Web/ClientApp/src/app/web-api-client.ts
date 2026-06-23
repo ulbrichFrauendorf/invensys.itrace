@@ -388,6 +388,81 @@ export class ErrorsClient implements IErrorsClient {
     }
 }
 
+export interface IPerformanceCountersClient {
+    /**
+     * GetPerformanceCounters
+     * @param intervalMinutes (optional) 
+     */
+    getPerformanceCounters(intervalMinutes: number | null | undefined): Observable<PerformanceCountersDto>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class PerformanceCountersClient implements IPerformanceCountersClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * GetPerformanceCounters
+     * @param intervalMinutes (optional) 
+     */
+    getPerformanceCounters(intervalMinutes: number | null | undefined): Observable<PerformanceCountersDto> {
+        let url_ = this.baseUrl + "/api/performance-counters?";
+        if (intervalMinutes !== undefined && intervalMinutes !== null)
+            url_ += "intervalMinutes=" + encodeURIComponent("" + intervalMinutes) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetPerformanceCounters(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetPerformanceCounters(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<PerformanceCountersDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<PerformanceCountersDto>;
+        }));
+    }
+
+    protected processGetPerformanceCounters(response: HttpResponseBase): Observable<PerformanceCountersDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PerformanceCountersDto;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
 export interface IRequestDurationsClient {
     /**
      * ListRequestDurations
@@ -694,6 +769,74 @@ export enum TelemetrySignal {
     Error = "Error",
     RequestDuration = "RequestDuration",
     DbDuration = "DbDuration",
+}
+
+export interface PerformanceCountersDto {
+    generatedAt?: string;
+    windowStart?: string;
+    windowEnd?: string;
+    intervalMinutes?: number;
+    machine?: PerformanceCounterSourceDto | undefined;
+    containers?: PerformanceCounterSourceDto[];
+    series?: PerformanceCounterSeriesDto[];
+    dailySummaries?: PerformanceCounterDailySummaryDto[];
+}
+
+export interface PerformanceCounterSourceDto {
+    scope?: PerformanceCounterScopeDto;
+    sourceId?: string;
+    sourceName?: string;
+    lastSeenAt?: string | undefined;
+    cpuUsagePercent?: number | undefined;
+    memoryUsagePercent?: number | undefined;
+    memoryUsedBytes?: number | undefined;
+    memoryLimitBytes?: number | undefined;
+    diskUsagePercent?: number | undefined;
+    diskUsedBytes?: number | undefined;
+    diskTotalBytes?: number | undefined;
+    networkReceiveBytesPerSecond?: number | undefined;
+    networkTransmitBytesPerSecond?: number | undefined;
+}
+
+export enum PerformanceCounterScopeDto {
+    Machine = "Machine",
+    Container = "Container",
+}
+
+export interface PerformanceCounterSeriesDto {
+    scope?: PerformanceCounterScopeDto;
+    sourceId?: string;
+    sourceName?: string;
+    metric?: PerformanceCounterMetricDto;
+    unit?: string;
+    points?: PerformanceCounterPointDto[];
+}
+
+export enum PerformanceCounterMetricDto {
+    CpuUsagePercent = "CpuUsagePercent",
+    MemoryUsagePercent = "MemoryUsagePercent",
+    DiskUsagePercent = "DiskUsagePercent",
+    NetworkReceiveBytesPerSecond = "NetworkReceiveBytesPerSecond",
+    NetworkTransmitBytesPerSecond = "NetworkTransmitBytesPerSecond",
+}
+
+export interface PerformanceCounterPointDto {
+    timestamp?: string;
+    value?: number;
+}
+
+export interface PerformanceCounterDailySummaryDto {
+    day?: string;
+    scope?: PerformanceCounterScopeDto;
+    sourceId?: string;
+    sourceName?: string;
+    metric?: PerformanceCounterMetricDto;
+    unit?: string;
+    sampleCount?: number;
+    minimum?: number;
+    maximum?: number;
+    average?: number;
+    alertHighCount?: number;
 }
 
 export interface TelemetryEnvelope {

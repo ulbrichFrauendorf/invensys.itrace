@@ -1,0 +1,87 @@
+<section class="page-shell">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Performance counters</p>
+      <h1>Linux machine health</h1>
+    </div>
+
+    <div class="page-actions">
+      <i-select
+        label="Graph interval"
+        [options]="intervalOptions"
+        optionLabel="label"
+        [fluid]="true"
+        [(ngModel)]="selectedInterval"
+        (ngModelChange)="load()"
+      />
+      <i-button
+        icon="pi pi-refresh"
+        severity="secondary"
+        iTooltip="Refresh"
+        (clicked)="load()"
+      />
+    </div>
+  </header>
+
+  @if (counters(); as model) {
+    <div class="summary-grid">
+      <i-card title="CPU">
+        <strong>{{ formatPercent(model.machine?.cpuUsagePercent) }}</strong>
+        <span>machine</span>
+      </i-card>
+      <i-card title="Memory">
+        <strong>{{ formatPercent(model.machine?.memoryUsagePercent) }}</strong>
+        <span>{{ formatBytes(model.machine?.memoryUsedBytes) }} used</span>
+      </i-card>
+      <i-card title="Disk">
+        <strong>{{ formatPercent(model.machine?.diskUsagePercent) }}</strong>
+        <span>{{ formatBytes(model.machine?.diskUsedBytes) }} used</span>
+      </i-card>
+      <i-card title="Network">
+        <strong>{{ formatRate(model.machine?.networkReceiveBytesPerSecond) }}</strong>
+        <span>{{ formatRate(model.machine?.networkTransmitBytesPerSecond) }} tx</span>
+      </i-card>
+    </div>
+
+    <section class="content-grid">
+      @for (panel of machineCharts(); track panel.chart.chartId) {
+        <i-card [title]="panel.title">
+          <i-chart [charts]="[panel.chart]" height="22rem" />
+        </i-card>
+      }
+    </section>
+
+    @if (machineCharts().length === 0) {
+      <i-card title="Machine history">
+        <i-no-content icon="pi pi-server" message="No machine counter samples available" />
+      </i-card>
+    }
+
+    <section class="content-grid">
+      @for (panel of containerCharts(); track panel.chart.chartId) {
+        <i-card [title]="panel.title">
+          <i-chart [charts]="[panel.chart]" height="22rem" />
+        </i-card>
+      }
+    </section>
+
+    <i-card title="Docker containers">
+      @if ((model.containers ?? []).length > 0) {
+        <i-table [grid]="containerGrid()" [sortable]="true" [striped]="true" />
+      } @else {
+        <i-no-content icon="pi pi-box" message="No Docker container counters available" />
+      }
+    </i-card>
+
+    <i-card title="Daily alert summary">
+      <i-table
+        [grid]="summaryGrid()"
+        [sortable]="true"
+        [globalFilter]="true"
+        [striped]="true"
+        [scrollable]="true"
+        height="32rem"
+      />
+    </i-card>
+  }
+</section>

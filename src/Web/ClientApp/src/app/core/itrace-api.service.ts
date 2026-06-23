@@ -5,11 +5,16 @@ import {
   DashboardClient,
   DbDurationsClient,
   ErrorsClient,
+  PerformanceCountersClient,
   RequestDurationsClient,
 } from '../web-api-client';
 import type {
   ApplicationDto,
   DashboardDto,
+  PerformanceCounterDailySummaryDto,
+  PerformanceCounterSeriesDto,
+  PerformanceCounterSourceDto,
+  PerformanceCountersDto,
   RegisterApplicationRequest,
   TelemetryEventDto,
   TelemetryListResponse,
@@ -24,6 +29,10 @@ export type {
   ApplicationDto,
   DashboardDto,
   MetricSummaryDto,
+  PerformanceCounterDailySummaryDto,
+  PerformanceCounterSeriesDto,
+  PerformanceCounterSourceDto,
+  PerformanceCountersDto,
   RegisterApplicationRequest,
   SiteHealthDto,
   TelemetryEventDto,
@@ -35,6 +44,7 @@ export class ITraceApiService {
   private readonly applications = inject(ApplicationsClient);
   private readonly dashboard = inject(DashboardClient);
   private readonly errors = inject(ErrorsClient);
+  private readonly performanceCounters = inject(PerformanceCountersClient);
   private readonly requestDurations = inject(RequestDurationsClient);
   private readonly dbDurations = inject(DbDurationsClient);
 
@@ -60,5 +70,9 @@ export class ITraceApiService {
 
   getDbDurations(applicationId?: string | null): Observable<TelemetryListResponse> {
     return this.dbDurations.listDbDurations(applicationId, 200);
+  }
+
+  getPerformanceCounters(intervalMinutes?: number | null): Observable<PerformanceCountersDto> {
+    return this.performanceCounters.getPerformanceCounters(intervalMinutes);
   }
 }

@@ -1,0 +1,106 @@
+using Invensys.ITrace.Client;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+
+namespace Invensys.ITrace.Tests;
+
+public sealed class ITraceRequestMiddlewareTests
+{
+    [Fact]
+    public async Task InvokeAsync_TracksThrownException_WhenRequestAbortedIsCanceled()
+    {
+        using var aborted = new CancellationTokenSource();
+        await aborted.CancelAsync();
+
+        var telemetryClient = new CapturingTelemetryClient();
+        var exception = new InvalidOperationException("boom");
+        var context = new DefaultHttpContext
+        {
+            RequestAborted = aborted.Token,
+        };
+
+        var middleware = new ITraceRequestMiddleware(_ => throw exception, telemetryClient);
+
+        var actual = await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.InvokeAsync(context));
+
+        Assert.Same(exception, actual);
+        Assert.Single(telemetryClient.Errors);
+        Assert.False(telemetryClient.Errors[0].CancellationToken.IsCancellationRequested);
+    }
+
+    [Fact]
+    public async Task InvokeAsync_TracksExceptionHandlerFeature_WhenExceptionWasHandledDownstream()
+    {
+        var telemetryClient = new CapturingTelemetryClient();
+        var exception = new InvalidOperationException("handled");
+        var context = new DefaultHttpContext();
+
+        var middleware = new ITraceRequestMiddleware(ctx =>
+        {
+            ctx.Features.Set<IExceptionHandlerFeature>(new ExceptionHandlerFeature
+            {
+                Error = exception,
+                Path = "/api/test",
+            });
+
+            ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            return Task.CompletedTask;
+        }, telemetryClient);
+
+        await middleware.InvokeAsync(context);
+
+        Assert.Single(telemetryClient.Errors);
+        Assert.Same(exception, telemetryClient.Errors[0].Exception);
+        Assert.Equal(StatusCodes.Status500InternalServerError, telemetryClient.RequestDurations[0].StatusCode);
+    }
+
+    private sealed class CapturingTelemetryClient : IITraceTelemetryClient
+    {
+        public List<CapturedError> Errors { get; } = [];
+
+        public List<CapturedRequestDuration> RequestDurations { get; } = [];
+
+        public ValueTask TrackErrorAsync(
+            Exception exception,
+            string? operation = null,
+            Dictionary<string, string?>? attributes = null,
+            CancellationToken cancellationToken = default)
+        {
+            Errors.Add(new CapturedError(exception, operation, cancellationToken));
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask TrackRequestDurationAsync(
+            string method,
+            string route,
+            int statusCode,
+            double durationMs,
+            Dictionary<string, string?>? attributes = null,
+            CancellationToken cancellationToken = default)
+        {
+            RequestDurations.Add(new CapturedRequestDuration(method, route, statusCode, durationMs));
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask TrackDbDurationAsync(
+            string operation,
+            double durationMs,
+            string? database,
+            string? dbSystem,
+            string? dbStatement,
+            Dictionary<string, string?>? attributes = null,
+            CancellationToken cancellationToken = default) =>
+            ValueTask.CompletedTask;
+    }
+
+    private sealed record CapturedError(
+        Exception Exception,
+        string? Operation,
+        CancellationToken CancellationToken);
+
+    private sealed record CapturedRequestDuration(
+        string Method,
+        string Route,
+        int StatusCode,
+        double DurationMs);
+}

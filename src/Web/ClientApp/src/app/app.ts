@@ -22,6 +22,7 @@ export class App {
         { label: 'Errors', icon: 'pi pi-exclamation-triangle', routerLink: ['/errors'] },
         { label: 'Requests', icon: 'pi pi-clock', routerLink: ['/request-durations'] },
         { label: 'Database', icon: 'pi pi-database', routerLink: ['/db-durations'] },
+        { label: 'Performance counters', icon: 'pi pi-server', routerLink: ['/performance-counters'] },
       ],
     },
     {

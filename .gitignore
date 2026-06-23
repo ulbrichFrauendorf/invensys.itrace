@@ -16,3 +16,6 @@ src/Invensys.ITrace.Api/
 src/Web/ClientApp/node_modules/
 src/Web/ClientApp/dist/
 src/Web/wwwroot/
+
+# Local app settings
+src/Web/appsettings.Development.json

@@ -11,6 +11,10 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
     public DbSet<TelemetryRecord> TelemetryRecords => Set<TelemetryRecord>();
 
+    public DbSet<PerformanceCounterSample> PerformanceCounterSamples => Set<PerformanceCounterSample>();
+
+    public DbSet<PerformanceCounterDailySummary> PerformanceCounterDailySummaries => Set<PerformanceCounterDailySummary>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<ApplicationRegistration>(entity =>
@@ -49,6 +53,27 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
                 .WithMany(application => application.TelemetryRecords)
                 .HasForeignKey(record => record.ApplicationId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PerformanceCounterSample>(entity =>
+        {
+            entity.ToTable("PerformanceCounterSamples");
+            entity.HasKey(sample => sample.Id);
+            entity.HasIndex(sample => new { sample.Scope, sample.SourceId, sample.OccurredAtUtc });
+            entity.Property(sample => sample.Scope).HasConversion<string>().HasMaxLength(40);
+            entity.Property(sample => sample.SourceId).HasMaxLength(128);
+            entity.Property(sample => sample.SourceName).HasMaxLength(256);
+        });
+
+        modelBuilder.Entity<PerformanceCounterDailySummary>(entity =>
+        {
+            entity.ToTable("PerformanceCounterDailySummaries");
+            entity.HasKey(summary => summary.Id);
+            entity.HasIndex(summary => new { summary.Day, summary.Scope, summary.SourceId, summary.Metric }).IsUnique();
+            entity.Property(summary => summary.Scope).HasConversion<string>().HasMaxLength(40);
+            entity.Property(summary => summary.Metric).HasConversion<string>().HasMaxLength(80);
+            entity.Property(summary => summary.SourceId).HasMaxLength(128);
+            entity.Property(summary => summary.SourceName).HasMaxLength(256);
         });
     }
 }

@@ -1,4 +1,5 @@
 using Invensys.ITrace.Application.Telemetry;
+using Invensys.ITrace.Application.PerformanceCounters;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Invensys.ITrace.Application;
@@ -9,6 +10,7 @@ public static class DependencyInjection
     {
         services.AddScoped<TelemetryIngestionService>();
         services.AddScoped<TelemetryQueryService>();
+        services.AddScoped<PerformanceCounterQueryService>();
 
         return services;
     }

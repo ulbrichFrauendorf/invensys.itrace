@@ -63,6 +63,9 @@ public sealed class PerformanceCounterQueryService(
             .ThenBy(summary => summary.Scope)
             .ThenBy(summary => summary.SourceName)
             .ThenBy(summary => summary.Metric)
+            .ToListAsync(cancellationToken);
+
+        var summaryDtos = summaries
             .Select(summary => new PerformanceCounterDailySummaryDto(
                 summary.Day,
                 (PerformanceCounterScopeDto)summary.Scope,
@@ -75,7 +78,7 @@ public sealed class PerformanceCounterQueryService(
                 Math.Round(summary.Maximum, 2),
                 Math.Round(summary.Average, 2),
                 summary.AlertHighCount))
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         return new PerformanceCountersDto(
             new DateTimeOffset(DateTime.SpecifyKind(now, DateTimeKind.Utc)),
@@ -85,7 +88,7 @@ public sealed class PerformanceCounterQueryService(
             machine,
             containers,
             series,
-            summaries);
+            summaryDtos);
     }
 
     private static PerformanceCounterSeriesDto BuildSeries(

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Net.Http.Headers;
 
 namespace Invensys.ITrace.Client;
 
@@ -59,6 +60,8 @@ public static class ServiceCollectionExtensions
             {
                 client.BaseAddress = options.CollectorEndpoint;
             }
+
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Invensys.ITrace.Client", "0.1.0"));
         });
 
         return services;

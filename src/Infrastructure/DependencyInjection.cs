@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -41,15 +42,49 @@ public static class DependencyInjection
                     .AllowAnyMethod());
         });
 
+        var otlpEndpoint = configuration["OpenTelemetry:Otlp:Endpoint"];
+
         services.AddOpenTelemetry()
-            .ConfigureResource(resource => resource.AddService(environment.ApplicationName))
-            .WithTracing(tracing => tracing
-                .AddAspNetCoreInstrumentation()
-                .AddHttpClientInstrumentation())
-            .WithMetrics(metrics => metrics
-                .AddAspNetCoreInstrumentation()
-                .AddHttpClientInstrumentation()
-                .AddRuntimeInstrumentation());
+            .ConfigureResource(resource => resource
+                .AddService(
+                    serviceName: environment.ApplicationName,
+                    serviceVersion: typeof(DependencyInjection).Assembly.GetName().Version?.ToString())
+                .AddAttributes(new Dictionary<string, object>
+                {
+                    ["deployment.environment.name"] = environment.EnvironmentName,
+                }))
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .AddSource("Invensys.ITrace.Client")
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation();
+
+                if (Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var endpoint))
+                {
+                    tracing.AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = endpoint;
+                        options.Protocol = OtlpExportProtocol.Grpc;
+                    });
+                }
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddRuntimeInstrumentation();
+
+                if (Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var endpoint))
+                {
+                    metrics.AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = endpoint;
+                        options.Protocol = OtlpExportProtocol.Grpc;
+                    });
+                }
+            });
 
         return services;
     }

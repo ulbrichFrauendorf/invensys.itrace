@@ -67,10 +67,13 @@ internal sealed class ITraceRequestMiddleware(
 
     private static Dictionary<string, string?> BuildRequestAttributes(HttpContext context) => new()
     {
-        ["http.scheme"] = context.Request.Scheme,
-        ["http.host"] = context.Request.Host.Value,
-        ["http.path"] = context.Request.Path.Value,
-        ["http.query_present"] = context.Request.QueryString.HasValue.ToString(),
+        ["url.scheme"] = context.Request.Scheme,
+        ["url.path"] = context.Request.Path.Value,
+        ["url.query_present"] = context.Request.QueryString.HasValue.ToString(),
+        ["server.address"] = context.Request.Host.Host,
+        ["server.port"] = context.Request.Host.Port?.ToString(),
+        ["http.request.method"] = context.Request.Method,
+        ["http.route"] = ResolveRoute(context),
         ["user_agent.original"] = context.Request.Headers.UserAgent.ToString(),
     };
 }

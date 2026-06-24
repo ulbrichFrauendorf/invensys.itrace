@@ -74,6 +74,25 @@ builder.Services.AddDbContext<AppDbContext>((services, options) =>
 
 Create or copy the application's DSN from the dashboard before deploying the client.
 
+If the host application already uses OpenTelemetry, include the iTrace ActivitySource so iTrace export attempts, errors, request durations, and database durations stay correlated with the active trace:
+
+```csharp
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing.AddSource(ITraceDiagnostics.ActivitySourceName));
+```
+
+To export the collector's own traces and metrics to an OTLP-compatible endpoint, set:
+
+```json
+{
+  "OpenTelemetry": {
+    "Otlp": {
+      "Endpoint": "http://localhost:4317"
+    }
+  }
+}
+```
+
 ## Verify
 
 ```powershell

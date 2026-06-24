@@ -94,7 +94,7 @@ public sealed class ITraceDbCommandInterceptor(
             operation,
             eventData.Duration.TotalMilliseconds,
             command.Connection?.Database,
-            eventData.Context?.Database.ProviderName,
+            ResolveDbSystemName(eventData.Context?.Database.ProviderName),
             command.CommandText,
             BuildAttributes(command, eventData));
     }
@@ -110,15 +110,31 @@ public sealed class ITraceDbCommandInterceptor(
             operation,
             eventData.Duration.TotalMilliseconds,
             command.Connection?.Database,
-            eventData.Context?.Database.ProviderName,
+            ResolveDbSystemName(eventData.Context?.Database.ProviderName),
             command.CommandText,
             BuildAttributes(command, eventData));
     }
 
     private static Dictionary<string, string?> BuildAttributes(DbCommand command, CommandEndEventData eventData) => new()
     {
+        ["db.system.name"] = ResolveDbSystemName(eventData.Context?.Database.ProviderName),
+        ["db.namespace"] = command.Connection?.Database,
+        ["db.operation.name"] = eventData.CommandSource.ToString(),
         ["db.command_timeout"] = command.CommandTimeout.ToString(),
         ["db.command_type"] = command.CommandType.ToString(),
         ["ef.command_source"] = eventData.CommandSource.ToString(),
     };
+
+    private static string ResolveDbSystemName(string? providerName) =>
+        providerName switch
+        {
+            "Microsoft.EntityFrameworkCore.SqlServer" => "microsoft.sql_server",
+            "Npgsql.EntityFrameworkCore.PostgreSQL" => "postgresql",
+            "Pomelo.EntityFrameworkCore.MySql" => "mysql",
+            "MySql.EntityFrameworkCore" => "mysql",
+            "Oracle.EntityFrameworkCore" => "oracle.db",
+            "Microsoft.EntityFrameworkCore.Sqlite" => "sqlite",
+            null or "" => "other_sql",
+            _ => providerName,
+        };
 }

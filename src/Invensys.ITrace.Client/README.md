@@ -43,3 +43,14 @@ builder.Services.AddDbContext<AppDbContext>((services, options) =>
 ```
 
 Use a DSN created in the iTrace dashboard for the target application, environment, and site.
+
+## OpenTelemetry
+
+iTrace enriches the current `Activity` and emits spans from `Invensys.ITrace.Client` for export attempts and telemetry capture. If the host application uses OpenTelemetry, register the source:
+
+```csharp
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing.AddSource(ITraceDiagnostics.ActivitySourceName));
+```
+
+Request attributes use current OpenTelemetry HTTP semantic names such as `http.request.method`, `http.route`, `http.response.status_code`, `server.address`, and `url.path`. Database timing attributes include `db.system.name`, `db.namespace`, and `db.operation.name`.

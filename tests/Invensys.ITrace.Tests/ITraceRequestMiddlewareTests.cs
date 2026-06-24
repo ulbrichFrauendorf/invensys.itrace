@@ -1,6 +1,8 @@
 using Invensys.ITrace.Client;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Logging;
 
 namespace Invensys.ITrace.Tests;
@@ -53,6 +55,39 @@ public sealed class ITraceRequestMiddlewareTests
         Assert.Single(telemetryClient.Errors);
         Assert.Same(exception, telemetryClient.Errors[0].Exception);
         Assert.Equal(StatusCodes.Status500InternalServerError, telemetryClient.RequestDurations[0].StatusCode);
+    }
+
+    [Fact]
+    public async Task InvokeAsync_TracksRequestDuration_WithOpenTelemetryAttributes()
+    {
+        var telemetryClient = new CapturingTelemetryClient();
+        var context = new DefaultHttpContext();
+        context.Request.Method = HttpMethods.Post;
+        context.Request.Scheme = "https";
+        context.Request.Host = new HostString("example.test", 443);
+        context.Request.Path = "/api/orders/123";
+        context.Request.QueryString = new QueryString("?include=lines");
+        context.SetEndpoint(new RouteEndpoint(
+            _ => Task.CompletedTask,
+            RoutePatternFactory.Parse("/api/orders/{id}"),
+            0,
+            [],
+            "orders"));
+
+        var middleware = new ITraceRequestMiddleware(_ => Task.CompletedTask, telemetryClient);
+
+        await middleware.InvokeAsync(context);
+
+        var request = Assert.Single(telemetryClient.RequestDurations);
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/orders/{id}", request.Route);
+        Assert.Equal("https", request.Attributes?["url.scheme"]);
+        Assert.Equal("/api/orders/123", request.Attributes?["url.path"]);
+        Assert.Equal("True", request.Attributes?["url.query_present"]);
+        Assert.Equal("example.test", request.Attributes?["server.address"]);
+        Assert.Equal("443", request.Attributes?["server.port"]);
+        Assert.Equal("POST", request.Attributes?["http.request.method"]);
+        Assert.Equal("/api/orders/{id}", request.Attributes?["http.route"]);
     }
 
     [Fact]
@@ -111,7 +146,7 @@ public sealed class ITraceRequestMiddlewareTests
             Dictionary<string, string?>? attributes = null,
             CancellationToken cancellationToken = default)
         {
-            RequestDurations.Add(new CapturedRequestDuration(method, route, statusCode, durationMs));
+            RequestDurations.Add(new CapturedRequestDuration(method, route, statusCode, durationMs, attributes));
             return ValueTask.CompletedTask;
         }
 
@@ -136,5 +171,6 @@ public sealed class ITraceRequestMiddlewareTests
         string Method,
         string Route,
         int StatusCode,
-        double DurationMs);
+        double DurationMs,
+        Dictionary<string, string?>? Attributes);
 }

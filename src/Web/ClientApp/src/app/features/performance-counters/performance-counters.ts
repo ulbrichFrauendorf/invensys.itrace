@@ -29,7 +29,7 @@ type MetricName =
   | 'NetworkTransmitBytesPerSecond';
 
 @Component({
-  selector: 'app-performance-counters-page',
+  selector: 'app-performance-counters',
   imports: [
     CommonModule,
     FormsModule,
@@ -41,10 +41,10 @@ type MetricName =
     NoContentComponent,
     TooltipDirective,
   ],
-  templateUrl: './performance-counters.page.html',
-  styleUrl: './performance-counters.page.scss',
+  templateUrl: './performance-counters.html',
+  styleUrl: './performance-counters.scss',
 })
-export class PerformanceCountersPage implements OnInit {
+export class PerformanceCounters implements OnInit {
   private readonly api = inject(ITraceApiService);
 
   protected readonly counters = signal<PerformanceCountersDto | null>(null);

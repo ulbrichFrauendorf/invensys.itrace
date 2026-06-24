@@ -17,7 +17,7 @@ import {
 import { formatDateTime } from '../../shared/application-selector';
 
 @Component({
-  selector: 'app-applications-page',
+  selector: 'app-applications',
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -27,10 +27,10 @@ import { formatDateTime } from '../../shared/application-selector';
     ITable,
     NoContentComponent,
   ],
-  templateUrl: './applications.page.html',
-  styleUrl: './applications.page.scss',
+  templateUrl: './applications.html',
+  styleUrl: './applications.scss',
 })
-export class ApplicationsPage implements OnInit {
+export class Applications implements OnInit {
   private readonly api = inject(ITraceApiService);
   private readonly formBuilder = inject(FormBuilder);
 

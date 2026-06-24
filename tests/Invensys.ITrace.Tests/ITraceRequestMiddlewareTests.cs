@@ -1,6 +1,7 @@
 using Invensys.ITrace.Client;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Invensys.ITrace.Tests;
 
@@ -54,6 +55,38 @@ public sealed class ITraceRequestMiddlewareTests
         Assert.Equal(StatusCodes.Status500InternalServerError, telemetryClient.RequestDurations[0].StatusCode);
     }
 
+    [Fact]
+    public void ITraceLoggerProvider_TracksLoggedException()
+    {
+        var telemetryClient = new CapturingTelemetryClient();
+        using var provider = new ITraceLoggerProvider(telemetryClient);
+        var logger = provider.CreateLogger("invensys.iserve.Application.Common.Behaviours.UnhandledExceptionBehaviour");
+        var exception = new InvalidOperationException("boom");
+
+        logger.LogError(
+            exception,
+            "invensys.iserve Request: Unhandled Exception for Request {Name}",
+            "CreateUserCommand");
+
+        var error = Assert.Single(telemetryClient.Errors);
+        Assert.Same(exception, error.Exception);
+        Assert.Equal("invensys.iserve.Application.Common.Behaviours.UnhandledExceptionBehaviour", error.Operation);
+        Assert.Equal("Error", error.Attributes?["log.level"]);
+        Assert.Equal("invensys.iserve.Application.Common.Behaviours.UnhandledExceptionBehaviour", error.Attributes?["log.category"]);
+    }
+
+    [Fact]
+    public void ITraceLoggerProvider_DoesNotTrackITraceClientLogs()
+    {
+        var telemetryClient = new CapturingTelemetryClient();
+        using var provider = new ITraceLoggerProvider(telemetryClient);
+        var logger = provider.CreateLogger("Invensys.ITrace.Client.ITraceTelemetryWorker");
+
+        logger.LogWarning("iTrace collector rejected telemetry with status {StatusCode}", 400);
+
+        Assert.Empty(telemetryClient.Errors);
+    }
+
     private sealed class CapturingTelemetryClient : IITraceTelemetryClient
     {
         public List<CapturedError> Errors { get; } = [];
@@ -66,7 +99,7 @@ public sealed class ITraceRequestMiddlewareTests
             Dictionary<string, string?>? attributes = null,
             CancellationToken cancellationToken = default)
         {
-            Errors.Add(new CapturedError(exception, operation, cancellationToken));
+            Errors.Add(new CapturedError(exception, operation, attributes, cancellationToken));
             return ValueTask.CompletedTask;
         }
 
@@ -96,6 +129,7 @@ public sealed class ITraceRequestMiddlewareTests
     private sealed record CapturedError(
         Exception Exception,
         string? Operation,
+        Dictionary<string, string?>? Attributes,
         CancellationToken CancellationToken);
 
     private sealed record CapturedRequestDuration(

@@ -4,32 +4,32 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     loadComponent: () =>
-      import('./features/dashboard/dashboard.page').then((m) => m.DashboardPage),
+      import('./features/dashboard/dashboard').then((m) => m.Dashboard),
   },
   {
     path: 'applications',
     loadComponent: () =>
-      import('./features/applications/applications.page').then((m) => m.ApplicationsPage),
+      import('./features/applications/applications').then((m) => m.Applications),
   },
   {
     path: 'errors',
     loadComponent: () =>
-      import('./features/errors/errors.page').then((m) => m.ErrorsPage),
+      import('./features/errors/errors').then((m) => m.Errors),
   },
   {
     path: 'request-durations',
     loadComponent: () =>
-      import('./features/request-durations/request-durations.page').then((m) => m.RequestDurationsPage),
+      import('./features/request-durations/request-durations').then((m) => m.RequestDurations),
   },
   {
     path: 'db-durations',
     loadComponent: () =>
-      import('./features/db-durations/db-durations.page').then((m) => m.DbDurationsPage),
+      import('./features/db-durations/db-durations').then((m) => m.DbDurations),
   },
   {
     path: 'performance-counters',
     loadComponent: () =>
-      import('./features/performance-counters/performance-counters.page').then((m) => m.PerformanceCountersPage),
+      import('./features/performance-counters/performance-counters').then((m) => m.PerformanceCounters),
   },
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
   { path: '**', redirectTo: 'dashboard' },

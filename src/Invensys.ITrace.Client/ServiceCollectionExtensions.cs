@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Invensys.ITrace.Client;
@@ -28,6 +29,12 @@ public static class ServiceCollectionExtensions
 
     public static IApplicationBuilder UseITrace(this IApplicationBuilder app) =>
         app.UseMiddleware<ITraceRequestMiddleware>();
+
+    public static ILoggingBuilder AddITrace(this ILoggingBuilder logging)
+    {
+        logging.Services.AddSingleton<ILoggerProvider, ITraceLoggerProvider>();
+        return logging;
+    }
 
     public static DbContextOptionsBuilder UseITraceDbTelemetry(
         this DbContextOptionsBuilder builder,

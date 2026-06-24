@@ -29,7 +29,7 @@ import {
 type TagSeverity = 'success' | 'warning' | 'danger';
 
 @Component({
-  selector: 'app-dashboard-page',
+  selector: 'app-dashboard',
   imports: [
     CommonModule,
     FormsModule,
@@ -42,10 +42,10 @@ type TagSeverity = 'success' | 'warning' | 'danger';
     NoContentComponent,
     TooltipDirective,
   ],
-  templateUrl: './dashboard.page.html',
-  styleUrl: './dashboard.page.scss',
+  templateUrl: './dashboard.html',
+  styleUrl: './dashboard.scss',
 })
-export class DashboardPage implements OnInit {
+export class Dashboard implements OnInit {
   private readonly api = inject(ITraceApiService);
 
   protected readonly applications = signal<ApplicationDto[]>([]);

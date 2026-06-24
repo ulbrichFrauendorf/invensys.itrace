@@ -10,6 +10,8 @@ import { ITag, LayoutComponent, LayoutConfig, MenuModel } from 'integra-ng';
 export class App {
   protected readonly layoutConfig: LayoutConfig = {
     websiteName: 'iTrace',
+    logoLight: 'assets/layout/images/invensys-icon-light.png',
+    logoDark: 'assets/layout/images/invensys-icon-dark.png',
     showThemeToggle: true,
     enablePullToRefresh: true,
   };

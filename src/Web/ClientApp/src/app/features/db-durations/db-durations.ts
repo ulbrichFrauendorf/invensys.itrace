@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DialogService, GridData, IButton, ICard, ISelect, ITable, TooltipDirective } from 'integra-ng';
+import { DialogService, GridData, IButton, ICard, ISelect, ITable, TooltipDirective } from 'invensys-ng';
 import {
   ApplicationDto,
   ITraceApiService,

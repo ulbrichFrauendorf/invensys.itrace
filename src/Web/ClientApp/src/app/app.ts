@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ITag, LayoutComponent, LayoutConfig, MenuModel } from 'integra-ng';
+import { ITag, LayoutComponent, LayoutConfig, MenuModel } from 'invensys-ng';
 
 @Component({
   selector: 'app-root',

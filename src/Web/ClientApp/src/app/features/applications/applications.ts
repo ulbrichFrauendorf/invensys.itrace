@@ -8,7 +8,7 @@ import {
   IInputText,
   ITable,
   NoContentComponent,
-} from 'integra-ng';
+} from 'invensys-ng';
 import {
   ApplicationDto,
   ITraceApiService,

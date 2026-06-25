@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { GridData, IButton, ICard, IChart, IChartData, ISelect, ITable, NoContentComponent, TooltipDirective } from 'integra-ng';
+import { GridData, IButton, ICard, IChart, IChartData, ISelect, ITable, NoContentComponent, TooltipDirective } from 'invensys-ng';
 import {
   ITraceApiService,
   PerformanceCounterDailySummaryDto,

@@ -12,7 +12,7 @@ import {
   ITag,
   NoContentComponent,
   TooltipDirective,
-} from 'integra-ng';
+} from 'invensys-ng';
 import {
   ApplicationDto,
   DashboardDto,

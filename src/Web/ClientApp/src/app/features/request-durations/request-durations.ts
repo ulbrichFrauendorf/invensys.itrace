@@ -23,6 +23,8 @@ import {
   buildTelemetryRows,
   buildVolumeChart,
   filterByTimeRange,
+  TelemetryGroupRow,
+  TelemetryRow,
   telemetryTimeRanges,
   TimeRangeOption,
 } from '../../shared/telemetry-table-helpers';
@@ -66,7 +68,7 @@ export class RequestDurations implements OnInit {
     ),
   );
 
-  protected readonly groupGrid = computed<GridData<any>>(() => ({
+  protected readonly groupGrid = computed<GridData<TelemetryGroupRow, TelemetryRow>>(() => ({
     columns: [
       { field: 'groupKey', header: 'Group', sortable: true },
       { field: 'samples', header: 'Samples', type: 'number', sortable: true },
@@ -76,29 +78,27 @@ export class RequestDurations implements OnInit {
       { field: 'p95Duration', header: 'P95 duration', sortable: true },
     ],
     rows: buildGroupRows(this.rows()),
-  }));
-
-  protected readonly grid = computed<GridData<any>>(() => ({
-    columns: [
-      { field: 'occurred', header: 'Occurred', sortable: true },
-      { field: 'applicationName', header: 'Application', sortable: true },
-      { field: 'siteName', header: 'Site', sortable: true },
-      { field: 'method', header: 'Method', sortable: true },
-      { field: 'groupKey', header: 'Endpoint group', sortable: true },
-      { field: 'hint', header: 'Request hint', sortable: true },
-      { field: 'route', header: 'Route', sortable: true },
-      { field: 'statusCode', header: 'Status', type: 'number', sortable: true },
-      { field: 'duration', header: 'Duration', sortable: true },
-    ],
-    rows: this.rows(),
-    actions: [
-      {
-        id: 'view-details',
-        icon: 'pi pi-eye',
-        tooltip: 'View details',
-        handler: (event) => this.showDetails(event),
-      },
-    ],
+    details: {
+      columns: [
+        { field: 'occurred', header: 'Occurred', sortable: true },
+        { field: 'applicationName', header: 'Application', sortable: true },
+        { field: 'siteName', header: 'Site', sortable: true },
+        { field: 'method', header: 'Method', sortable: true },
+        { field: 'hint', header: 'Request hint', sortable: true },
+        { field: 'route', header: 'Route', sortable: true },
+        { field: 'statusCode', header: 'Status', type: 'number', sortable: true },
+        { field: 'duration', header: 'Duration', sortable: true },
+      ],
+      rows: (group) => this.rows().filter((row) => row.groupKey === group.groupKey),
+      actions: [
+        {
+          id: 'view-details',
+          icon: 'pi pi-eye',
+          tooltip: 'View details',
+          handler: (event) => this.showDetails(event),
+        },
+      ],
+    },
   }));
 
   ngOnInit(): void {

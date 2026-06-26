@@ -34,17 +34,13 @@
     }
   </i-card>
 
-  <i-card title="Grouped telemetry">
-    <i-table [grid]="groupGrid()" [sortable]="true" [globalFilter]="true" [striped]="true" />
-  </i-card>
-
-  <i-card title="Database timings">
+  <i-card title="Database timings by group">
     <i-table
-      [grid]="grid()"
+      [grid]="groupGrid()"
       [sortable]="true"
       [globalFilter]="true"
       [striped]="true"
-      [scrollable]="true"
+      dataKey="groupKey"
       height="42rem"
     />
   </i-card>

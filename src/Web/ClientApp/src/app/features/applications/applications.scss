@@ -11,18 +11,7 @@
 }
 
 .eyebrow {
-  color: #64748b;
-  font-size: 0.75rem;
-  font-weight: 700;
   margin: 0 0 0.25rem;
-  text-transform: uppercase;
-}
-
-h1 {
-  color: #111827;
-  font-size: 1.75rem;
-  line-height: 1.2;
-  margin: 0;
 }
 
 .form-grid {
@@ -47,20 +36,11 @@ h1 {
 }
 
 code {
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
+  border: 1px solid;
   border-radius: 6px;
-  color: #0f766e;
   display: block;
   overflow-wrap: anywhere;
   padding: 0.75rem;
-}
-
-.empty-state {
-  align-items: center;
-  color: #64748b;
-  display: flex;
-  min-height: 8rem;
 }
 
 @media (max-width: 900px) {

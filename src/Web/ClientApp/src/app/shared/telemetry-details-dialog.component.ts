@@ -32,7 +32,7 @@ export interface TelemetryDetailsDialogData {
       }
 
       .telemetry-details div {
-        border-bottom: 1px solid var(--surface-border);
+        border-bottom: 1px solid;
         display: grid;
         gap: 0.25rem;
         padding-bottom: 0.75rem;
@@ -43,15 +43,7 @@ export interface TelemetryDetailsDialogData {
         padding-bottom: 0;
       }
 
-      dt {
-        color: var(--color-text-tertiary);
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-      }
-
       dd {
-        color: var(--color-text-primary);
         margin: 0;
         overflow-wrap: anywhere;
         white-space: pre-wrap;

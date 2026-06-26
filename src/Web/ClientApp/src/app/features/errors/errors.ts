@@ -22,6 +22,8 @@ import {
   buildTelemetryRows,
   buildVolumeChart,
   filterByTimeRange,
+  TelemetryGroupRow,
+  TelemetryRow,
   telemetryTimeRanges,
   TimeRangeOption,
 } from '../../shared/telemetry-table-helpers';
@@ -60,7 +62,7 @@ export class Errors implements OnInit {
     ),
   );
 
-  protected readonly groupGrid = computed<GridData<any>>(() => ({
+  protected readonly groupGrid = computed<GridData<TelemetryGroupRow, TelemetryRow>>(() => ({
     columns: [
       { field: 'groupKey', header: 'Group', sortable: true },
       { field: 'samples', header: 'Samples', type: 'number', sortable: true },
@@ -68,26 +70,24 @@ export class Errors implements OnInit {
       { field: 'hint', header: 'Latest hint', sortable: true },
     ],
     rows: buildGroupRows(this.rows()),
-  }));
-
-  protected readonly grid = computed<GridData<any>>(() => ({
-    columns: [
-      { field: 'occurred', header: 'Occurred', sortable: true },
-      { field: 'severity', header: 'Severity', sortable: true },
-      { field: 'groupKey', header: 'Exception group', sortable: true },
-      { field: 'hint', header: 'Issue hint', sortable: true },
-      { field: 'applicationName', header: 'Application', sortable: true },
-      { field: 'siteName', header: 'Site', sortable: true },
-    ],
-    rows: this.rows(),
-    actions: [
-      {
-        id: 'view-details',
-        icon: 'pi pi-eye',
-        tooltip: 'View details',
-        handler: (event) => this.showDetails(event),
-      },
-    ],
+    details: {
+      columns: [
+        { field: 'occurred', header: 'Occurred', sortable: true },
+        { field: 'severity', header: 'Severity', sortable: true },
+        { field: 'hint', header: 'Issue hint', sortable: true },
+        { field: 'applicationName', header: 'Application', sortable: true },
+        { field: 'siteName', header: 'Site', sortable: true },
+      ],
+      rows: (group) => this.rows().filter((row) => row.groupKey === group.groupKey),
+      actions: [
+        {
+          id: 'view-details',
+          icon: 'pi pi-eye',
+          tooltip: 'View details',
+          handler: (event) => this.showDetails(event),
+        },
+      ],
+    },
   }));
 
   ngOnInit(): void {

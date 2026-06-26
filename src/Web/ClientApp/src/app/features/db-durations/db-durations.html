@@ -14,14 +14,29 @@
         [(ngModel)]="selectedApplication"
         (ngModelChange)="selectApplication($event)"
       />
-      <i-button
-        icon="pi pi-refresh"
-        severity="secondary"
-        iTooltip="Refresh"
-        (clicked)="load()"
+      <i-select
+        label="Time range"
+        [options]="timeRangeOptions"
+        optionLabel="label"
+        [fluid]="true"
+        [(ngModel)]="selectedTimeRange"
+        (ngModelChange)="selectTimeRange($event)"
       />
+      <i-button icon="pi pi-refresh" severity="secondary" iTooltip="Refresh" (clicked)="load()" />
     </div>
   </header>
+
+  <i-card title="Database operation volume">
+    @if (filteredEvents().length > 0) {
+      <i-chart [charts]="chart()" height="20rem" />
+    } @else {
+      <p class="empty-state">No database operations in this time range</p>
+    }
+  </i-card>
+
+  <i-card title="Grouped telemetry">
+    <i-table [grid]="groupGrid()" [sortable]="true" [globalFilter]="true" [striped]="true" />
+  </i-card>
 
   <i-card title="Database timings">
     <i-table
@@ -33,5 +48,4 @@
       height="42rem"
     />
   </i-card>
-
 </section>

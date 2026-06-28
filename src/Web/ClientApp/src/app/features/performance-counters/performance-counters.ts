@@ -18,7 +18,7 @@ interface IntervalOption {
 
 interface ChartPanel {
   title: string;
-  chart: IChartData;
+  charts: IChartData[];
 }
 
 type MetricName =
@@ -174,7 +174,7 @@ export class PerformanceCounters implements OnInit {
 
     return {
       title,
-      chart: {
+      charts: [{
         chartId,
         chartType: 'line',
         labels: labels.map((label) => this.formatTime(label)),
@@ -183,11 +183,10 @@ export class PerformanceCounters implements OnInit {
           return {
             label: `${item.sourceName ?? 'Unknown'} ${this.metricLabel(item.metric)}`,
             data: labels.map((label) => values.get(label) ?? 0),
-            borderColor: colors[index % colors.length],
             backgroundColors: [colors[index % colors.length]],
           };
         }),
-      },
+      }],
     };
   }
 

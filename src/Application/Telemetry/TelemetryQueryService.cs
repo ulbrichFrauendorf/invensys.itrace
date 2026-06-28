@@ -15,10 +15,12 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
 
     public async Task<DashboardDto> GetDashboardAsync(
         Guid? applicationId,
+        int? windowMinutes,
         CancellationToken cancellationToken = default)
     {
+        var safeWindowMinutes = Math.Clamp(windowMinutes ?? 24 * 60, 1, 30 * 24 * 60);
         var windowEnd = DateTime.UtcNow;
-        var windowStart = windowEnd.AddHours(-24);
+        var windowStart = windowEnd.AddMinutes(-safeWindowMinutes);
 
         var applications = await db.Applications
             .AsNoTracking()
@@ -120,7 +122,7 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
 
     private static SiteHealthStatus ClassifyHealth(
         DateTime? lastSeenAtUtc,
-        int errors24h,
+        int errorsInWindow,
         double requestP95Ms,
         double databaseP95Ms)
     {
@@ -129,7 +131,7 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
             return SiteHealthStatus.Offline;
         }
 
-        if (errors24h > 0 || requestP95Ms >= DegradedRequestP95Ms || databaseP95Ms >= DegradedDatabaseP95Ms)
+        if (errorsInWindow > 0 || requestP95Ms >= DegradedRequestP95Ms || databaseP95Ms >= DegradedDatabaseP95Ms)
         {
             return SiteHealthStatus.Degraded;
         }

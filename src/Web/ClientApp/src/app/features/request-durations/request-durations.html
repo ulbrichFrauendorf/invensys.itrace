@@ -6,15 +6,6 @@
     </div>
     <div class="page-actions">
       <i-select
-        label="Application"
-        [options]="applicationOptions()"
-        optionLabel="label"
-        [showClear]="true"
-        [fluid]="true"
-        [(ngModel)]="selectedApplication"
-        (ngModelChange)="selectApplication($event)"
-      />
-      <i-select
         label="Time range"
         [options]="timeRangeOptions"
         optionLabel="label"

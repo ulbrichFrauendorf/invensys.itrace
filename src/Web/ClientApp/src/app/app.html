@@ -1,5 +1,15 @@
 <i-layout [config]="layoutConfig" [menuModel]="menuModel">
-  <div topbarActions class="collector-state">
+  <div topbarActions class="topbar-actions">
+    <i-select
+      class="application-selector"
+      label="Application"
+      [options]="applicationContext.applicationOptions()"
+      optionLabel="label"
+      [showClear]="true"
+      [fluid]="true"
+      [ngModel]="applicationContext.selectedApplication()"
+      (ngModelChange)="applicationContext.selectApplication($event)"
+    />
     <i-tag value="Collector" severity="success" icon="pi pi-circle-fill" [rounded]="true" />
   </div>
 </i-layout>

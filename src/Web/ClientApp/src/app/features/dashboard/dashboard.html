@@ -7,13 +7,12 @@
 
     <div class="page-actions">
       <i-select
-        label="Application"
-        [options]="applicationOptions()"
+        label="Time range"
+        [options]="timeRangeOptions"
         optionLabel="label"
-        [showClear]="true"
         [fluid]="true"
-        [(ngModel)]="selectedApplication"
-        (ngModelChange)="selectApplication($event)"
+        [(ngModel)]="selectedTimeRange"
+        (ngModelChange)="selectTimeRange($event)"
       />
       <i-button
         icon="pi pi-refresh"
@@ -32,7 +31,7 @@
       </i-card>
       <i-card title="Errors">
         <strong>{{ model.errorCount }}</strong>
-        <span>last 24h</span>
+        <span>last {{ selectedTimeRange.label }}</span>
       </i-card>
       <i-card title="Request p95">
         <strong>{{ formatMilliseconds(model.requests?.p95Ms) }}</strong>

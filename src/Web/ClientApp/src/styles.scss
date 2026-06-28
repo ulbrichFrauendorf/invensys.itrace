@@ -9,3 +9,21 @@ body {
   height: 100%;
   margin: 0;
 }
+
+.page-shell {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+i-chart {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  i-chart .i-charts-container .i-chart-item {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+}

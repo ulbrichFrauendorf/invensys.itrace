@@ -13,9 +13,9 @@ public sealed record SiteHealthDto(
     string SiteName,
     SiteHealthStatus Status,
     DateTimeOffset? LastSeenAt,
-    int Errors24h,
-    MetricSummaryDto Requests24h,
-    MetricSummaryDto Database24h);
+    int ErrorsInWindow,
+    MetricSummaryDto RequestsInWindow,
+    MetricSummaryDto DatabaseInWindow);
 
 public sealed record DashboardDto(
     Guid? SelectedApplicationId,

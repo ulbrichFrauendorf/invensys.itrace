@@ -159,8 +159,9 @@ export interface IDashboardClient {
     /**
      * GetDashboard
      * @param applicationId (optional) 
+     * @param windowMinutes (optional)
      */
-    getDashboard(applicationId: string | null | undefined): Observable<DashboardDto>;
+    getDashboard(applicationId: string | null | undefined, windowMinutes: number | null | undefined): Observable<DashboardDto>;
 }
 
 @Injectable({
@@ -179,11 +180,14 @@ export class DashboardClient implements IDashboardClient {
     /**
      * GetDashboard
      * @param applicationId (optional) 
+     * @param windowMinutes (optional)
      */
-    getDashboard(applicationId: string | null | undefined): Observable<DashboardDto> {
+    getDashboard(applicationId: string | null | undefined, windowMinutes: number | null | undefined): Observable<DashboardDto> {
         let url_ = this.baseUrl + "/api/dashboard?";
         if (applicationId !== undefined && applicationId !== null)
             url_ += "applicationId=" + encodeURIComponent("" + applicationId) + "&";
+        if (windowMinutes !== undefined && windowMinutes !== null)
+            url_ += "windowMinutes=" + encodeURIComponent("" + windowMinutes) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -725,9 +729,9 @@ export interface SiteHealthDto {
     siteName?: string;
     status?: SiteHealthStatus;
     lastSeenAt?: string | undefined;
-    errors24h?: number;
-    requests24h?: MetricSummaryDto;
-    database24h?: MetricSummaryDto;
+    errorsInWindow?: number;
+    requestsInWindow?: MetricSummaryDto;
+    databaseInWindow?: MetricSummaryDto;
 }
 
 export enum SiteHealthStatus {

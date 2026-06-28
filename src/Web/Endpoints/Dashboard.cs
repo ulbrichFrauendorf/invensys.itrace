@@ -16,10 +16,11 @@ public sealed class Dashboard : EndpointGroupBase
 
     public static async Task<Ok<DashboardDto>> GetDashboard(
         Guid? applicationId,
+        int? windowMinutes,
         TelemetryQueryService queries,
         CancellationToken cancellationToken)
     {
-        var dashboard = await queries.GetDashboardAsync(applicationId, cancellationToken);
+        var dashboard = await queries.GetDashboardAsync(applicationId, windowMinutes, cancellationToken);
         return TypedResults.Ok(dashboard);
     }
 }

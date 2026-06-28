@@ -44,9 +44,9 @@
     </div>
 
     <section class="content-grid">
-      @for (panel of machineCharts(); track panel.chart.chartId) {
+      @for (panel of machineCharts(); track panel.charts[0].chartId) {
         <i-card [title]="panel.title">
-          <i-chart [charts]="[panel.chart]" height="22rem" />
+          <i-chart [charts]="panel.charts" height="22rem" />
         </i-card>
       }
     </section>
@@ -58,9 +58,9 @@
     }
 
     <section class="content-grid">
-      @for (panel of containerCharts(); track panel.chart.chartId) {
+      @for (panel of containerCharts(); track panel.charts[0].chartId) {
         <i-card [title]="panel.title">
-          <i-chart [charts]="[panel.chart]" height="22rem" />
+          <i-chart [charts]="panel.charts" height="22rem" />
         </i-card>
       }
     </section>

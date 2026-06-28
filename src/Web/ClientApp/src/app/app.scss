@@ -1,5 +1,19 @@
-.collector-state {
+.topbar-actions {
   align-items: center;
-  display: inline-flex;
-  white-space: nowrap;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.application-selector {
+  width: clamp(12rem, 24vw, 24rem);
+}
+
+@media (max-width: 640px) {
+  .topbar-actions i-tag {
+    display: none;
+  }
+
+  .application-selector {
+    width: min(12rem, 45vw);
+  }
 }

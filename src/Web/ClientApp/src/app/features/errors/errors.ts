@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   DialogService,
@@ -11,12 +11,9 @@ import {
   ITable,
   TooltipDirective,
 } from 'invensys-ng';
-import { ApplicationDto, ITraceApiService, TelemetryEventDto } from '../../core/itrace-api.service';
-import {
-  ApplicationOption,
-  formatDateTime,
-  toApplicationOptions,
-} from '../../shared/application-selector';
+import { ApplicationContextService } from '../../core/application-context.service';
+import { ITraceApiService, TelemetryEventDto } from '../../core/itrace-api.service';
+import { formatDateTime } from '../../shared/application-selector';
 import {
   buildGroupRows,
   buildTelemetryRows,
@@ -35,16 +32,14 @@ import { TelemetryDetailsDialogComponent } from '../../shared/telemetry-details-
   templateUrl: './errors.html',
   styleUrl: './errors.scss',
 })
-export class Errors implements OnInit {
+export class Errors {
   private readonly api = inject(ITraceApiService);
+  private readonly applicationContext = inject(ApplicationContextService);
   private readonly dialogService = inject(DialogService);
 
-  protected readonly applications = signal<ApplicationDto[]>([]);
   protected readonly events = signal<TelemetryEventDto[]>([]);
-  protected selectedApplication: ApplicationOption | null = null;
   protected readonly timeRangeOptions = telemetryTimeRanges;
   protected selectedTimeRange: TimeRangeOption = this.timeRangeOptions[2];
-  protected readonly applicationOptions = computed(() => toApplicationOptions(this.applications()));
 
   protected readonly filteredEvents = computed(() =>
     filterByTimeRange(this.events(), this.selectedTimeRange),
@@ -90,17 +85,15 @@ export class Errors implements OnInit {
     },
   }));
 
-  ngOnInit(): void {
-    this.api.getApplications().subscribe((applications) => this.applications.set(applications));
-    this.load();
+  constructor() {
+    effect((onCleanup) => {
+      const subscription = this.load(this.applicationContext.selectedApplicationId());
+      onCleanup(() => subscription.unsubscribe());
+    });
   }
 
-  protected selectApplication(option: ApplicationOption | null): void {
-    this.load();
-  }
-
-  protected load(): void {
-    this.api.getErrors(this.selectedApplication?.id).subscribe((response) => {
+  protected load(applicationId = this.applicationContext.selectedApplicationId()) {
+    return this.api.getErrors(applicationId).subscribe((response) => {
       this.events.set(response.items ?? []);
     });
   }

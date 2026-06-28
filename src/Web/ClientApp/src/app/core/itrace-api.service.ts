@@ -56,8 +56,8 @@ export class ITraceApiService {
     return this.applications.registerApplication(request);
   }
 
-  getDashboard(applicationId?: string | null): Observable<DashboardDto> {
-    return this.dashboard.getDashboard(applicationId);
+  getDashboard(applicationId?: string | null, windowMinutes?: number | null): Observable<DashboardDto> {
+    return this.dashboard.getDashboard(applicationId, windowMinutes);
   }
 
   getErrors(applicationId?: string | null): Observable<TelemetryListResponse> {

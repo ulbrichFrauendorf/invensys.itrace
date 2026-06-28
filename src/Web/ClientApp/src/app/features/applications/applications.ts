@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   GridData,
@@ -14,6 +14,7 @@ import {
   ITraceApiService,
   RegisterApplicationRequest,
 } from '../../core/itrace-api.service';
+import { ApplicationContextService } from '../../core/application-context.service';
 import { formatDateTime } from '../../shared/application-selector';
 
 @Component({
@@ -30,11 +31,12 @@ import { formatDateTime } from '../../shared/application-selector';
   templateUrl: './applications.html',
   styleUrl: './applications.scss',
 })
-export class Applications implements OnInit {
+export class Applications {
   private readonly api = inject(ITraceApiService);
+  private readonly applicationContext = inject(ApplicationContextService);
   private readonly formBuilder = inject(FormBuilder);
 
-  protected readonly applications = signal<ApplicationDto[]>([]);
+  protected readonly applications = this.applicationContext.applications;
   protected readonly saving = signal(false);
   protected readonly lastCreatedDsn = signal<string | null>(null);
 
@@ -67,10 +69,6 @@ export class Applications implements OnInit {
     ],
   }));
 
-  ngOnInit(): void {
-    this.loadApplications();
-  }
-
   protected save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -95,7 +93,7 @@ export class Applications implements OnInit {
           siteName: '',
           description: '',
         });
-        this.loadApplications();
+        this.applicationContext.refreshApplications();
       },
       complete: () => this.saving.set(false),
       error: () => this.saving.set(false),
@@ -107,12 +105,6 @@ export class Applications implements OnInit {
     if (dsn) {
       this.copyDsn(dsn);
     }
-  }
-
-  private loadApplications(): void {
-    this.api.getApplications().subscribe((applications) => {
-      this.applications.set(applications);
-    });
   }
 
   private copyDsn(dsn?: string): void {

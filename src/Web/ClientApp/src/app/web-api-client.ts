@@ -689,7 +689,6 @@ export interface ApplicationDto {
     id?: string;
     name?: string;
     environment?: string;
-    siteName?: string;
     dsn?: string;
     isEnabled?: boolean;
     createdAt?: string;
@@ -700,7 +699,6 @@ export interface ApplicationDto {
 export interface RegisterApplicationRequest {
     name?: string;
     environment?: string;
-    siteName?: string;
     description?: string | undefined;
 }
 
@@ -712,7 +710,7 @@ export interface DashboardDto {
     errorCount?: number;
     requests?: MetricSummaryDto;
     database?: MetricSummaryDto;
-    sites?: SiteHealthDto[];
+    applications?: ApplicationHealthDto[];
 }
 
 export interface MetricSummaryDto {
@@ -722,19 +720,18 @@ export interface MetricSummaryDto {
     maxMs?: number;
 }
 
-export interface SiteHealthDto {
+export interface ApplicationHealthDto {
     applicationId?: string;
     applicationName?: string;
     environment?: string;
-    siteName?: string;
-    status?: SiteHealthStatus;
+    status?: ApplicationHealthStatus;
     lastSeenAt?: string | undefined;
     errorsInWindow?: number;
     requestsInWindow?: MetricSummaryDto;
     databaseInWindow?: MetricSummaryDto;
 }
 
-export enum SiteHealthStatus {
+export enum ApplicationHealthStatus {
     Healthy = "Healthy",
     Degraded = "Degraded",
     Offline = "Offline",
@@ -751,7 +748,6 @@ export interface TelemetryEventDto {
     applicationId?: string;
     applicationName?: string;
     environment?: string;
-    siteName?: string;
     signal?: TelemetrySignal;
     occurredAt?: string;
     severity?: string;
@@ -849,7 +845,6 @@ export interface TelemetryEnvelope {
     occurredAt?: string;
     applicationName?: string | undefined;
     environment?: string | undefined;
-    siteName?: string | undefined;
     severity?: string | undefined;
     message?: string | undefined;
     operation?: string | undefined;

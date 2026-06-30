@@ -1,32 +1,30 @@
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using Invensys.ITrace.Application.Common.Interfaces;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace Invensys.ITrace.Infrastructure.Services;
 
-public sealed partial class DsnGenerator : IDsnGenerator
+public sealed class DsnGenerator : IDsnGenerator
 {
-    public string Create(string applicationName, string environment, string siteName)
+    public string Create(string applicationName, string environment)
     {
-        var key = WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(24));
-        var slug = Slugify($"{applicationName}-{environment}-{siteName}");
-        return $"itrace://{key}@collector/{slug}";
+        var entropy = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
+        var slug = Slugify($"{applicationName}-{environment}");
+        return $"itrace://{slug}-{entropy}";
     }
 
     public string Hash(string dsn)
     {
-        var bytes = Encoding.UTF8.GetBytes(dsn.Trim());
-        return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(dsn));
+        return Convert.ToHexString(bytes);
     }
 
     private static string Slugify(string value)
     {
-        var slug = NonSlugCharacter().Replace(value.Trim().ToLowerInvariant(), "-");
-        return slug.Trim('-');
-    }
+        var chars = value.Trim().ToLowerInvariant()
+            .Select(character => char.IsLetterOrDigit(character) ? character : '-')
+            .ToArray();
 
-    [GeneratedRegex("[^a-z0-9]+")]
-    private static partial Regex NonSlugCharacter();
+        return string.Join('-', new string(chars).Split('-', StringSplitOptions.RemoveEmptyEntries));
+    }
 }

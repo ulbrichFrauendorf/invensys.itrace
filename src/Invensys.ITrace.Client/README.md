@@ -26,7 +26,6 @@ Add configuration:
     "Dsn": "itrace://assigned-dsn@collector/site",
     "ApplicationName": "Integra Flow",
     "Environment": "Production",
-    "SiteName": "Default",
     "IncludeDbStatements": false
   }
 }
@@ -42,7 +41,7 @@ builder.Services.AddDbContext<AppDbContext>((services, options) =>
 });
 ```
 
-Use a DSN created in the iTrace dashboard for the target application, environment, and site.
+Use a DSN created in the iTrace dashboard for the target application and environment.
 
 ## OpenTelemetry
 

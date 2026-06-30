@@ -6,12 +6,11 @@ public sealed record MetricSummaryDto(
     double P95Ms,
     double MaxMs);
 
-public sealed record SiteHealthDto(
+public sealed record ApplicationHealthDto(
     Guid ApplicationId,
     string ApplicationName,
     string Environment,
-    string SiteName,
-    SiteHealthStatus Status,
+    ApplicationHealthStatus Status,
     DateTimeOffset? LastSeenAt,
     int ErrorsInWindow,
     MetricSummaryDto RequestsInWindow,
@@ -25,4 +24,4 @@ public sealed record DashboardDto(
     int ErrorCount,
     MetricSummaryDto Requests,
     MetricSummaryDto Database,
-    IReadOnlyList<SiteHealthDto> Sites);
+    IReadOnlyList<ApplicationHealthDto> Applications);

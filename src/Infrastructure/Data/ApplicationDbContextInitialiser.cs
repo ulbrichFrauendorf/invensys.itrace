@@ -1,5 +1,5 @@
 using Invensys.ITrace.Application.Common.Interfaces;
-using Invensys.ITrace.Domain.Entities;
+using DomainApplication = Invensys.ITrace.Domain.Entities.Application;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -62,19 +62,16 @@ public sealed class ApplicationDbContextInitialiser(
             {
                 Name = section["Name"]?.Trim(),
                 Environment = section["Environment"]?.Trim() ?? "Production",
-                SiteName = section["SiteName"]?.Trim(),
                 Description = section["Description"]?.Trim(),
             })
-            .Where(application => !string.IsNullOrWhiteSpace(application.Name)
-                && !string.IsNullOrWhiteSpace(application.SiteName))
+            .Where(application => !string.IsNullOrWhiteSpace(application.Name))
             .ToList();
 
         foreach (var seed in configuredApplications)
         {
             var exists = await context.Applications.AnyAsync(application =>
                 application.Name == seed.Name
-                && application.Environment == seed.Environment
-                && application.SiteName == seed.SiteName,
+                && application.Environment == seed.Environment,
                 cancellationToken);
 
             if (exists)
@@ -82,14 +79,13 @@ public sealed class ApplicationDbContextInitialiser(
                 continue;
             }
 
-            var dsn = dsnGenerator.Create(seed.Name!, seed.Environment, seed.SiteName!);
+            var dsn = dsnGenerator.Create(seed.Name!, seed.Environment);
             var now = DateTime.UtcNow;
-            context.Applications.Add(new ApplicationRegistration
+            context.Applications.Add(new DomainApplication
             {
                 Id = Guid.NewGuid(),
                 Name = seed.Name!,
                 Environment = seed.Environment,
-                SiteName = seed.SiteName!,
                 Description = seed.Description,
                 Dsn = dsn,
                 DsnHash = dsnGenerator.Hash(dsn),

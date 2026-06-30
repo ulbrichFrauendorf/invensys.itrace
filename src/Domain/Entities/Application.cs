@@ -2,12 +2,11 @@ using Invensys.ITrace.Contracts;
 
 namespace Invensys.ITrace.Domain.Entities;
 
-public sealed class ApplicationRegistration
+public sealed class Application
 {
     public Guid Id { get; set; }
     public required string Name { get; set; }
     public required string Environment { get; set; }
-    public required string SiteName { get; set; }
     public string? Description { get; set; }
     public required string Dsn { get; set; }
     public required string DsnHash { get; set; }
@@ -21,7 +20,6 @@ public sealed class ApplicationRegistration
         Id,
         Name,
         Environment,
-        SiteName,
         Dsn,
         IsEnabled,
         new DateTimeOffset(DateTime.SpecifyKind(CreatedAtUtc, DateTimeKind.Utc)),

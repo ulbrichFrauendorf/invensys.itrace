@@ -79,7 +79,6 @@ export class DbDurations {
       columns: [
         { field: 'occurred', header: 'Occurred', sortable: true },
         { field: 'applicationName', header: 'Application', sortable: true },
-        { field: 'siteName', header: 'Site', sortable: true },
         { field: 'operation', header: 'Operation', sortable: true },
         { field: 'hint', header: 'DB call hint', sortable: true },
         { field: 'database', header: 'Database', sortable: true },
@@ -141,7 +140,6 @@ export class DbDurations {
           ['Occurred', formatDateTime(event.occurredAt)],
           ['Application', event.applicationName],
           ['Environment', event.environment],
-          ['Site', event.siteName],
           ['Operation', event.operation],
           ['Database', event.database],
           ['Provider', event.dbSystem],

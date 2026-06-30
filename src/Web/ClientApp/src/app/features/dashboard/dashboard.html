@@ -44,7 +44,7 @@
     </div>
 
     <section class="content-grid">
-      <i-card title="Site latency">
+      <i-card title="Application latency">
         @if (charts().length > 0) {
           <i-chart [charts]="charts()" height="22rem" />
         } @else {
@@ -52,18 +52,18 @@
         }
       </i-card>
 
-      <i-card title="Site overview">
+      <i-card title="Application overview">
         <div class="health-list">
-          @for (site of model.sites ?? []; track site.applicationId) {
+          @for (application of model.applications ?? []; track application.applicationId) {
             <div class="health-row">
               <i-tag
-                [value]="site.status ?? 'Offline'"
-                [severity]="statusSeverity(site)"
+                [value]="application.status ?? 'Offline'"
+                [severity]="statusSeverity(application)"
                 [rounded]="true"
               />
               <div>
-                <strong>{{ site.applicationName ?? 'Unknown' }}</strong>
-                <span>{{ site.environment ?? 'Unknown' }} / {{ site.siteName ?? 'Unknown' }}</span>
+                <strong>{{ application.applicationName ?? 'Unknown' }}</strong>
+                <span>{{ application.environment ?? 'Unknown' }}</span>
               </div>
             </div>
           }
@@ -71,8 +71,8 @@
       </i-card>
     </section>
 
-    <i-card title="Registered sites">
-      <i-table [grid]="siteGrid()" [sortable]="true" [striped]="true" />
+    <i-card title="Registered applications">
+      <i-table [grid]="applicationGrid()" [sortable]="true" [striped]="true" />
     </i-card>
   }
 </section>

@@ -26,7 +26,7 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
             .AsNoTracking()
             .Where(application => !applicationId.HasValue || application.Id == applicationId.Value)
             .OrderBy(application => application.Name)
-            .ThenBy(application => application.SiteName)
+            .ThenBy(application => application.Environment)
             .ToListAsync(cancellationToken);
 
         var applicationIds = applications.Select(application => application.Id).ToArray();
@@ -37,7 +37,7 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
                 && record.OccurredAtUtc <= windowEnd)
             .ToListAsync(cancellationToken);
 
-        var siteHealth = applications.Select(application =>
+        var applicationHealth = applications.Select(application =>
         {
             var applicationRecords = records
                 .Where(record => record.ApplicationId == application.Id)
@@ -48,11 +48,10 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
             var databaseSummary = Summarize(applicationRecords, TelemetrySignal.DbDuration);
             var status = ClassifyHealth(application.LastSeenAtUtc, errorCount, requestSummary.P95Ms, databaseSummary.P95Ms);
 
-            return new SiteHealthDto(
+            return new ApplicationHealthDto(
                 application.Id,
                 application.Name,
                 application.Environment,
-                application.SiteName,
                 status,
                 application.LastSeenAtUtc is null
                     ? null
@@ -70,7 +69,7 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
             records.Count(record => record.Signal == TelemetrySignal.Error),
             Summarize(records, TelemetrySignal.RequestDuration),
             Summarize(records, TelemetrySignal.DbDuration),
-            siteHealth);
+            applicationHealth);
     }
 
     public async Task<TelemetryListResponse> GetEventsAsync(
@@ -120,7 +119,7 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
             MetricMath.Round(durations.Max()));
     }
 
-    private static SiteHealthStatus ClassifyHealth(
+    private static ApplicationHealthStatus ClassifyHealth(
         DateTime? lastSeenAtUtc,
         int errorsInWindow,
         double requestP95Ms,
@@ -128,15 +127,15 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
     {
         if (!lastSeenAtUtc.HasValue || DateTime.UtcNow - lastSeenAtUtc.Value > TimeSpan.FromMinutes(15))
         {
-            return SiteHealthStatus.Offline;
+            return ApplicationHealthStatus.Offline;
         }
 
         if (errorsInWindow > 0 || requestP95Ms >= DegradedRequestP95Ms || databaseP95Ms >= DegradedDatabaseP95Ms)
         {
-            return SiteHealthStatus.Degraded;
+            return ApplicationHealthStatus.Degraded;
         }
 
-        return SiteHealthStatus.Healthy;
+        return ApplicationHealthStatus.Healthy;
     }
 
     private static TelemetryEventDto ToDto(TelemetryRecord record)
@@ -150,7 +149,6 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
             record.ApplicationId,
             record.Application?.Name ?? "Unknown",
             record.Application?.Environment ?? "Unknown",
-            record.Application?.SiteName ?? "Unknown",
             record.Signal,
             new DateTimeOffset(DateTime.SpecifyKind(record.OccurredAtUtc, DateTimeKind.Utc)),
             record.Severity,

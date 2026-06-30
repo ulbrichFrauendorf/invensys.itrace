@@ -10,7 +10,6 @@ public sealed class ITraceOptions
     public string Dsn { get; set; } = string.Empty;
     public string ApplicationName { get; set; } = AppDomain.CurrentDomain.FriendlyName;
     public string Environment { get; set; } = "Production";
-    public string SiteName { get; set; } = System.Environment.MachineName;
     public int QueueCapacity { get; set; } = 10_000;
     public bool CaptureErrors { get; set; } = true;
     public bool CaptureRequestDurations { get; set; } = true;

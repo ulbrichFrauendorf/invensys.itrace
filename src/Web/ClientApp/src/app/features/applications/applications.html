@@ -11,7 +11,6 @@
       <form [formGroup]="form" (ngSubmit)="save()" class="registration-form">
         <i-input-text label="Application" formControlName="name" [fluid]="true" />
         <i-input-text label="Environment" formControlName="environment" [fluid]="true" />
-        <i-input-text label="Site" formControlName="siteName" [fluid]="true" />
         <i-input-text label="Description" formControlName="description" [fluid]="true" />
 
         <i-button type="submit" icon="pi pi-key" [loading]="saving()">Assign DSN</i-button>

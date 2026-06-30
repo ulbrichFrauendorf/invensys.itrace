@@ -1,6 +1,6 @@
 using Invensys.ITrace.Application.Common.Interfaces;
 using Invensys.ITrace.Contracts;
-using Invensys.ITrace.Domain.Entities;
+using DomainApplication = Invensys.ITrace.Domain.Entities.Application;
 using Invensys.ITrace.Infrastructure.Data;
 using Invensys.ITrace.Web.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +24,7 @@ public sealed class Applications : EndpointGroupBase
         var applications = await db.Applications
             .AsNoTracking()
             .OrderBy(application => application.Name)
-            .ThenBy(application => application.SiteName)
+            .ThenBy(application => application.Environment)
             .Select(application => application.ToDto())
             .ToListAsync(cancellationToken);
 
@@ -42,10 +42,6 @@ public sealed class Applications : EndpointGroupBase
             return TypedResults.BadRequest("Application name is required.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.SiteName))
-        {
-            return TypedResults.BadRequest("Site name is required.");
-        }
 
         var environment = string.IsNullOrWhiteSpace(request.Environment)
             ? "Production"
@@ -53,23 +49,21 @@ public sealed class Applications : EndpointGroupBase
 
         var alreadyExists = await db.Applications.AnyAsync(application =>
             application.Name == request.Name.Trim()
-            && application.Environment == environment
-            && application.SiteName == request.SiteName.Trim(),
+            && application.Environment == environment,
             cancellationToken);
 
         if (alreadyExists)
         {
-            return TypedResults.Conflict("An application registration already exists for this environment and site.");
+            return TypedResults.Conflict("An application already exists for this environment.");
         }
 
-        var dsn = dsnGenerator.Create(request.Name, environment, request.SiteName);
+        var dsn = dsnGenerator.Create(request.Name, environment);
         var now = DateTime.UtcNow;
-        var application = new ApplicationRegistration
+        var application = new DomainApplication
         {
             Id = Guid.NewGuid(),
             Name = request.Name.Trim(),
             Environment = environment,
-            SiteName = request.SiteName.Trim(),
             Description = request.Description?.Trim(),
             Dsn = dsn,
             DsnHash = dsnGenerator.Hash(dsn),

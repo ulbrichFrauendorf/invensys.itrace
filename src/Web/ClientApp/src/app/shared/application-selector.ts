@@ -10,7 +10,7 @@ export function toApplicationOptions(applications: ApplicationDto[]): Applicatio
     .filter((application): application is ApplicationDto & { id: string } => !!application.id)
     .map((application) => ({
       id: application.id,
-      label: `${application.name ?? 'Unknown'} / ${application.environment ?? 'Unknown'} / ${application.siteName ?? 'Unknown'}`,
+      label: `${application.name ?? 'Unknown'} / ${application.environment ?? 'Unknown'}`,
     }));
 }
 

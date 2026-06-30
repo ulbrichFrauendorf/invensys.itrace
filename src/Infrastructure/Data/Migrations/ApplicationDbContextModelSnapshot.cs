@@ -22,7 +22,7 @@ namespace Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Invensys.ITrace.Domain.Entities.ApplicationRegistration", b =>
+            modelBuilder.Entity("Invensys.ITrace.Domain.Entities.Application", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -61,11 +61,6 @@ namespace Infrastructure.Data.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("nvarchar(160)");
 
-                    b.Property<string>("SiteName")
-                        .IsRequired()
-                        .HasMaxLength(160)
-                        .HasColumnType("nvarchar(160)");
-
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -74,7 +69,7 @@ namespace Infrastructure.Data.Migrations
                     b.HasIndex("DsnHash")
                         .IsUnique();
 
-                    b.HasIndex("Name", "Environment", "SiteName")
+                    b.HasIndex("Name", "Environment")
                         .IsUnique();
 
                     b.ToTable("Applications", (string)null);
@@ -282,7 +277,7 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Invensys.ITrace.Domain.Entities.TelemetryRecord", b =>
                 {
-                    b.HasOne("Invensys.ITrace.Domain.Entities.ApplicationRegistration", "Application")
+                    b.HasOne("Invensys.ITrace.Domain.Entities.Application", "Application")
                         .WithMany("TelemetryRecords")
                         .HasForeignKey("ApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -291,7 +286,7 @@ namespace Infrastructure.Data.Migrations
                     b.Navigation("Application");
                 });
 
-            modelBuilder.Entity("Invensys.ITrace.Domain.Entities.ApplicationRegistration", b =>
+            modelBuilder.Entity("Invensys.ITrace.Domain.Entities.Application", b =>
                 {
                     b.Navigation("TelemetryRecords");
                 });

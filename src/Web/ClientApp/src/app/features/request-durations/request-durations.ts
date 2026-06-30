@@ -79,7 +79,6 @@ export class RequestDurations {
       columns: [
         { field: 'occurred', header: 'Occurred', sortable: true },
         { field: 'applicationName', header: 'Application', sortable: true },
-        { field: 'siteName', header: 'Site', sortable: true },
         { field: 'method', header: 'Method', sortable: true },
         { field: 'hint', header: 'Request hint', sortable: true },
         { field: 'route', header: 'Route', sortable: true },
@@ -148,7 +147,6 @@ export class RequestDurations {
           ['Occurred', formatDateTime(event.occurredAt)],
           ['Application', event.applicationName],
           ['Environment', event.environment],
-          ['Site', event.siteName],
           ['Method', event.method],
           ['Route', event.route],
           ['Status', event.statusCode],

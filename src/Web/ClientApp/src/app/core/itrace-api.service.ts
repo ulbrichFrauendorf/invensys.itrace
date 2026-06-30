@@ -21,7 +21,7 @@ import type {
 } from '../web-api-client';
 
 export {
-  SiteHealthStatus,
+  ApplicationHealthStatus,
   TelemetrySignal,
 } from '../web-api-client';
 
@@ -34,7 +34,7 @@ export type {
   PerformanceCounterSourceDto,
   PerformanceCountersDto,
   RegisterApplicationRequest,
-  SiteHealthDto,
+  ApplicationHealthDto,
   TelemetryEventDto,
   TelemetryListResponse,
 } from '../web-api-client';

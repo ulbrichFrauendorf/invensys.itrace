@@ -43,7 +43,6 @@ export class Applications {
   protected readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(160)]],
     environment: ['Production', [Validators.required, Validators.maxLength(80)]],
-    siteName: ['', [Validators.required, Validators.maxLength(160)]],
     description: [''],
   });
 
@@ -51,7 +50,6 @@ export class Applications {
     columns: [
       { field: 'name', header: 'Application', sortable: true },
       { field: 'environment', header: 'Environment', sortable: true },
-      { field: 'siteName', header: 'Site', sortable: true },
       { field: 'created', header: 'Created', sortable: true },
       { field: 'dsn', header: 'DSN' },
     ],
@@ -80,7 +78,6 @@ export class Applications {
     const request: RegisterApplicationRequest = {
       name: formValue.name,
       environment: formValue.environment,
-      siteName: formValue.siteName,
       description: formValue.description || undefined,
     };
 
@@ -90,7 +87,6 @@ export class Applications {
         this.form.reset({
           name: '',
           environment: 'Production',
-          siteName: '',
           description: '',
         });
         this.applicationContext.refreshApplications();

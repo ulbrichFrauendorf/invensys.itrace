@@ -6,7 +6,7 @@ public sealed class TelemetryRecord
 {
     public Guid Id { get; set; }
     public Guid ApplicationId { get; set; }
-    public ApplicationRegistration? Application { get; set; }
+    public Application? Application { get; set; }
     public TelemetrySignal Signal { get; set; }
     public DateTime OccurredAtUtc { get; set; }
     public string Severity { get; set; } = "Information";

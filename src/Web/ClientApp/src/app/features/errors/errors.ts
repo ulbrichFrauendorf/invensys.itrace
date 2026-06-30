@@ -71,7 +71,6 @@ export class Errors {
         { field: 'severity', header: 'Severity', sortable: true },
         { field: 'hint', header: 'Issue hint', sortable: true },
         { field: 'applicationName', header: 'Application', sortable: true },
-        { field: 'siteName', header: 'Site', sortable: true },
       ],
       rows: (group) => this.rows().filter((row) => row.groupKey === group.groupKey),
       actions: [
@@ -104,7 +103,7 @@ export class Errors {
 
   private groupKey(event: TelemetryEventDto): string {
     return (
-      [event.exceptionType, event.operation, event.route, event.siteName]
+      [event.exceptionType, event.operation, event.route]
         .filter(Boolean)
         .join(' / ') || 'Unclassified error'
     );
@@ -134,7 +133,6 @@ export class Errors {
           ['Severity', event.severity],
           ['Application', event.applicationName],
           ['Environment', event.environment],
-          ['Site', event.siteName],
           ['Exception', event.exceptionType],
           ['Message', event.message],
           ['Operation', event.operation],

@@ -760,6 +760,7 @@ export interface TelemetryEventDto {
     database?: string | undefined;
     dbSystem?: string | undefined;
     exceptionType?: string | undefined;
+    stackTrace?: string | undefined;
     traceId?: string | undefined;
     spanId?: string | undefined;
     attributes?: { [key: string]: string; };

@@ -161,6 +161,7 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
             record.Database,
             record.DbSystem,
             record.ExceptionType,
+            record.StackTrace,
             record.TraceId,
             record.SpanId,
             attributes);

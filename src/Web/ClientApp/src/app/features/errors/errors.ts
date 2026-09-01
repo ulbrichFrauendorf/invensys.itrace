@@ -139,6 +139,7 @@ export class Errors {
           ['Route', event.route],
           ['Method', event.method],
           ['Status', event.statusCode],
+          ['Stack trace', event.stackTrace],
           ['Trace', event.traceId],
           ['Span', event.spanId],
         ]),

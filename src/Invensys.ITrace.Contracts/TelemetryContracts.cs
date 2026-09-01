@@ -39,6 +39,7 @@ public sealed record TelemetryEventDto(
     string? Database,
     string? DbSystem,
     string? ExceptionType,
+    string? StackTrace,
     string? TraceId,
     string? SpanId,
     Dictionary<string, string?> Attributes);

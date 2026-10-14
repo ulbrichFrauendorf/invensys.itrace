@@ -14,6 +14,9 @@
         <i-input-text label="Description" formControlName="description" [fluid]="true" />
 
         <i-button type="submit" icon="pi pi-key" [loading]="saving()">Assign DSN</i-button>
+        @if (saveError(); as error) {
+          <p class="registration-error" role="alert">{{ error }}</p>
+        }
       </form>
     </i-card>
 

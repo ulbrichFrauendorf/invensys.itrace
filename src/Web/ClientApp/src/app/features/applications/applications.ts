@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { finalize } from 'rxjs';
 import {
   GridData,
   IButton,
@@ -38,6 +39,7 @@ export class Applications {
 
   protected readonly applications = this.applicationContext.applications;
   protected readonly saving = signal(false);
+  protected readonly saveError = signal<string | null>(null);
   protected readonly lastCreatedDsn = signal<string | null>(null);
 
   protected readonly form = this.formBuilder.nonNullable.group({
@@ -68,6 +70,11 @@ export class Applications {
   }));
 
   protected save(): void {
+    if (this.saving()) {
+      return;
+    }
+
+    this.saveError.set(null);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -81,7 +88,9 @@ export class Applications {
       description: formValue.description || undefined,
     };
 
-    this.api.registerApplication(request).subscribe({
+    this.api.registerApplication(request).pipe(
+      finalize(() => this.saving.set(false)),
+    ).subscribe({
       next: (application) => {
         this.lastCreatedDsn.set(application.dsn ?? null);
         this.form.reset({
@@ -91,8 +100,11 @@ export class Applications {
         });
         this.applicationContext.refreshApplications();
       },
-      complete: () => this.saving.set(false),
-      error: () => this.saving.set(false),
+      error: (error: unknown) => this.saveError.set(
+        typeof error === 'string' && error.trim()
+          ? error
+          : 'Unable to assign a DSN. Please try again. If the problem persists, contact your administrator.',
+      ),
     });
   }
 

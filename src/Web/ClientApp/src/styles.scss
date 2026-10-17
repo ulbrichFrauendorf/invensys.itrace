@@ -1,4 +1,5 @@
-@use "invensys-ng/src/lib/themes/theme.scss" as invensys-theme; @include invensys-theme.define-theme();
+@use 'invensys-ng/src/lib/themes/theme.scss' as invensys-theme;
+@include invensys-theme.define-theme();
 
 * {
   box-sizing: border-box;
@@ -10,20 +11,43 @@ body {
   margin: 0;
 }
 
-.page-shell {
-  grid-template-columns: minmax(0, 1fr);
-  min-width: 0;
+app-root i-topbar .layout-topbar .layout-topbar-menu {
+  align-items: center;
 }
 
 i-chart {
   display: block;
   min-width: 0;
   width: 100%;
+
+  .i-charts-container {
+    .i-chart-item {
+      @media (max-width: 768px) {
+        flex: 0 0 auto;
+        min-width: 0;
+      }
+    }
+  }
 }
 
-@media (max-width: 768px) {
-  i-chart .i-charts-container .i-chart-item {
-    flex: 0 0 auto;
-    min-width: 0;
+[iPageHeaderActions].page-actions {
+  --header-action-size: 42px;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.75rem;
+  width: 20rem;
+  max-width: 100%;
+  min-width: 0;
+
+  // Include the wrapper to override the library's scoped button size rules.
+  > i-button .i-button-wrapper button.i-button {
+    width: var(--header-action-size);
+    height: var(--header-action-size);
+  }
+
+  @media (pointer: coarse) {
+    --header-action-size: 44px;
   }
 }

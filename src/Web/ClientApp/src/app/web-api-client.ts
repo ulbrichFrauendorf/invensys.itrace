@@ -159,7 +159,7 @@ export interface IDashboardClient {
     /**
      * GetDashboard
      * @param applicationId (optional) 
-     * @param windowMinutes (optional)
+     * @param windowMinutes (optional) 
      */
     getDashboard(applicationId: string | null | undefined, windowMinutes: number | null | undefined): Observable<DashboardDto>;
 }
@@ -180,7 +180,7 @@ export class DashboardClient implements IDashboardClient {
     /**
      * GetDashboard
      * @param applicationId (optional) 
-     * @param windowMinutes (optional)
+     * @param windowMinutes (optional) 
      */
     getDashboard(applicationId: string | null | undefined, windowMinutes: number | null | undefined): Observable<DashboardDto> {
         let url_ = this.baseUrl + "/api/dashboard?";

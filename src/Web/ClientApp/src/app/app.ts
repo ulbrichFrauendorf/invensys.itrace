@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ISelect, ITag, LayoutComponent, LayoutConfig, MenuModel } from 'invensys-ng';
 import { ApplicationContextService } from './core/application-context.service';
@@ -7,6 +7,7 @@ import { ApplicationContextService } from './core/application-context.service';
   selector: 'app-root',
   imports: [FormsModule, ISelect, LayoutComponent, ITag],
   templateUrl: './app.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.scss',
 })
 export class App {
@@ -28,14 +29,16 @@ export class App {
         { label: 'Errors', icon: 'pi pi-exclamation-triangle', routerLink: ['/errors'] },
         { label: 'Requests', icon: 'pi pi-clock', routerLink: ['/request-durations'] },
         { label: 'Database', icon: 'pi pi-database', routerLink: ['/db-durations'] },
-        { label: 'Performance counters', icon: 'pi pi-server', routerLink: ['/performance-counters'] },
+        {
+          label: 'Performance counters',
+          icon: 'pi pi-server',
+          routerLink: ['/performance-counters'],
+        },
       ],
     },
     {
       label: 'Administration',
-      items: [
-        { label: 'Applications', icon: 'pi pi-key', routerLink: ['/applications'] },
-      ],
+      items: [{ label: 'Applications', icon: 'pi pi-key', routerLink: ['/applications'] }],
     },
   ];
 }

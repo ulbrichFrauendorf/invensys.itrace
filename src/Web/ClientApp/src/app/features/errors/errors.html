@@ -1,31 +1,24 @@
-<section class="page-shell">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Errors</p>
-      <h1>Error log</h1>
-    </div>
-    <div class="page-actions">
-      <i-select
-        label="Time range"
-        [options]="timeRangeOptions"
-        optionLabel="label"
-        [fluid]="true"
-        [(ngModel)]="selectedTimeRange"
-        (ngModelChange)="selectTimeRange($event)"
-      />
-      <i-button icon="pi pi-refresh" severity="secondary" iTooltip="Refresh" (clicked)="load()" />
-    </div>
-  </header>
-
-  <i-card title="Error volume">
+<i-page-layout headerText="Error log" eyebrowText="Errors">
+  <div iPageHeaderActions class="page-actions">
+    <i-select
+      label="Time range"
+      [options]="timeRangeOptions"
+      optionLabel="label"
+      [fluid]="true"
+      [(ngModel)]="selectedTimeRange"
+      (ngModelChange)="selectTimeRange($event)"
+    />
+    <i-button icon="pi pi-refresh" severity="secondary" iTooltip="Refresh" (clicked)="load()" />
+  </div>
+  <div class="page-sections">
     @if (filteredEvents().length > 0) {
-      <i-chart [charts]="chart()" height="20rem" />
+      <i-card title="Error volume">
+        <i-chart [charts]="chart()" height="20rem" />
+      </i-card>
     } @else {
       <p class="empty-state">No errors in this time range</p>
     }
-  </i-card>
 
-  <i-card title="Captured errors by group">
     <i-table
       [grid]="groupGrid()"
       [sortable]="true"
@@ -34,5 +27,5 @@
       dataKey="groupKey"
       height="42rem"
     />
-  </i-card>
-</section>
+  </div>
+</i-page-layout>

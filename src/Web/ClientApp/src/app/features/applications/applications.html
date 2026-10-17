@@ -1,38 +1,33 @@
-<section class="page-shell">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Applications</p>
-      <h1>DSN assignments</h1>
-    </div>
-  </header>
+<i-page-layout headerText="DSN assignments" eyebrowText="Applications">
+  <div class="page-sections">
+    <section class="form-grid">
+      <i-card title="Register application">
+        <form [formGroup]="form" (ngSubmit)="save()" class="registration-form">
+          <i-input-text label="Application" formControlName="name" [fluid]="true" />
+          <i-input-text label="Environment" formControlName="environment" [fluid]="true" />
+          <i-input-text label="Description" formControlName="description" [fluid]="true" />
 
-  <section class="form-grid">
-    <i-card title="Register application">
-      <form [formGroup]="form" (ngSubmit)="save()" class="registration-form">
-        <i-input-text label="Application" formControlName="name" [fluid]="true" />
-        <i-input-text label="Environment" formControlName="environment" [fluid]="true" />
-        <i-input-text label="Description" formControlName="description" [fluid]="true" />
+          <i-button type="submit" icon="pi pi-key" [loading]="saving()">Assign DSN</i-button>
+          @if (saveError(); as error) {
+            <p class="registration-error" role="alert">{{ error }}</p>
+          }
+        </form>
+      </i-card>
 
-        <i-button type="submit" icon="pi pi-key" [loading]="saving()">Assign DSN</i-button>
-        @if (saveError(); as error) {
-          <p class="registration-error" role="alert">{{ error }}</p>
-        }
-      </form>
-    </i-card>
-
-    <i-card title="Latest DSN">
       @if (lastCreatedDsn(); as dsn) {
-        <div class="dsn-box">
-          <code>{{ dsn }}</code>
-          <i-button icon="pi pi-copy" severity="secondary" (clicked)="copyLastDsn()">Copy</i-button>
-        </div>
+        <i-card title="Latest DSN">
+          <div class="dsn-box">
+            <code>{{ dsn }}</code>
+            <i-button icon="pi pi-copy" severity="secondary" (clicked)="copyLastDsn()"
+              >Copy</i-button
+            >
+          </div>
+        </i-card>
       } @else {
         <i-no-content icon="pi pi-key" message="No new DSN in this session" />
       }
-    </i-card>
-  </section>
+    </section>
 
-  <i-card title="Registered applications">
     <i-table [grid]="grid()" [sortable]="true" [globalFilter]="true" [striped]="true" />
-  </i-card>
-</section>
+  </div>
+</i-page-layout>

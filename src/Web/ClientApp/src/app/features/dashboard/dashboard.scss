@@ -1,74 +1,49 @@
-.page-shell {
-  display: grid;
-  gap: 1rem;
-  padding: 1.25rem;
-}
+:host {
+  .page-sections {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
 
-.page-header {
-  align-items: end;
-  display: flex;
-  gap: 1rem;
-  justify-content: space-between;
-}
-
-.eyebrow {
-  margin: 0 0 0.25rem;
-}
-
-.page-actions {
-  align-items: center;
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: minmax(9rem, 12rem) 2.5rem;
-}
-
-.summary-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.summary-grid strong {
   display: block;
-}
-
-.content-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
-}
-
-.health-list {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.health-row {
-  align-items: center;
-  border-bottom: 1px solid;
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: 6rem 1fr;
-  padding: 0.75rem 0;
-}
-
-.health-row div {
-  display: grid;
-  gap: 0.125rem;
-}
-
-@media (max-width: 900px) {
-  .page-header {
-    align-items: stretch;
-    flex-direction: column;
+  min-width: 0;
+  .summary-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    strong {
+      display: block;
+    }
+    @media (max-width: 900px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    @media (max-width: 480px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
-
-  .page-actions {
-    grid-template-columns: 1fr 2.5rem;
-  }
-
-  .summary-grid,
   .content-grid {
-    grid-template-columns: 1fr;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
+    @media (max-width: 900px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .health-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .health-row {
+    align-items: center;
+    border-bottom: 1px solid;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 6rem minmax(0, 1fr);
+    padding: 0.75rem 0;
+    div {
+      display: grid;
+      gap: 0.125rem;
+      overflow-wrap: anywhere;
+    }
   }
 }

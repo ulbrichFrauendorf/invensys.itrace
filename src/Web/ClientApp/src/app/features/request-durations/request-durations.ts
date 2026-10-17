@@ -1,5 +1,13 @@
+import { PageLayoutComponent, PageHeaderActionsDirective } from 'invensys-ng';
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   DialogService,
@@ -13,10 +21,7 @@ import {
 } from 'invensys-ng';
 import { ApplicationContextService } from '../../core/application-context.service';
 import { ITraceApiService, TelemetryEventDto } from '../../core/itrace-api.service';
-import {
-  formatDateTime,
-  formatMilliseconds,
-} from '../../shared/application-selector';
+import { formatDateTime, formatMilliseconds } from '../../shared/application-selector';
 import {
   buildGroupRows,
   buildTelemetryRows,
@@ -31,8 +36,20 @@ import { TelemetryDetailsDialogComponent } from '../../shared/telemetry-details-
 
 @Component({
   selector: 'app-request-durations',
-  imports: [CommonModule, FormsModule, IButton, ICard, IChart, ISelect, ITable, TooltipDirective],
+  imports: [
+    PageLayoutComponent,
+    PageHeaderActionsDirective,
+    CommonModule,
+    FormsModule,
+    IButton,
+    ICard,
+    IChart,
+    ISelect,
+    ITable,
+    TooltipDirective,
+  ],
   templateUrl: './request-durations.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './request-durations.scss',
 })
 export class RequestDurations {

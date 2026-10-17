@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 export interface TelemetryDetailRow {
   label: string;
@@ -23,6 +23,7 @@ export interface TelemetryDetailsDialogData {
       }
     </dl>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       .telemetry-details {

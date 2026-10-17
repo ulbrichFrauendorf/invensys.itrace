@@ -1,19 +1,21 @@
-.topbar-actions {
-  align-items: center;
-  display: flex;
-  gap: 0.75rem;
-}
+:host {
+  .topbar-actions {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
 
-.application-selector {
-  width: clamp(12rem, 24vw, 24rem);
-}
+    .application-selector {
+      width: clamp(12rem, 24vw, 24rem);
 
-@media (max-width: 640px) {
-  .topbar-actions i-tag {
-    display: none;
-  }
+      @media (max-width: 640px) {
+        width: min(12rem, 45vw);
+      }
+    }
 
-  .application-selector {
-    width: min(12rem, 45vw);
+    i-tag {
+      @media (max-width: 640px) {
+        display: none;
+      }
+    }
   }
 }

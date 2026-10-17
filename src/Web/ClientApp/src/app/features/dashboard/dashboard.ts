@@ -1,5 +1,13 @@
+import { PageLayoutComponent, PageHeaderActionsDirective } from 'invensys-ng';
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   GridData,
@@ -19,10 +27,7 @@ import {
   ApplicationHealthDto,
 } from '../../core/itrace-api.service';
 import { ApplicationContextService } from '../../core/application-context.service';
-import {
-  formatDateTime,
-  formatMilliseconds,
-} from '../../shared/application-selector';
+import { formatDateTime, formatMilliseconds } from '../../shared/application-selector';
 import { telemetryTimeRanges, TimeRangeOption } from '../../shared/telemetry-table-helpers';
 
 type TagSeverity = 'success' | 'warning' | 'danger';
@@ -30,6 +35,8 @@ type TagSeverity = 'success' | 'warning' | 'danger';
 @Component({
   selector: 'app-dashboard',
   imports: [
+    PageLayoutComponent,
+    PageHeaderActionsDirective,
     CommonModule,
     FormsModule,
     IButton,
@@ -42,6 +49,7 @@ type TagSeverity = 'success' | 'warning' | 'danger';
     TooltipDirective,
   ],
   templateUrl: './dashboard.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './dashboard.scss',
 })
 export class Dashboard {

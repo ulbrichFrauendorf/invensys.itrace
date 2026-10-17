@@ -1,5 +1,13 @@
+import { PageLayoutComponent, PageHeaderActionsDirective } from 'invensys-ng';
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   DialogService,
@@ -28,8 +36,20 @@ import { TelemetryDetailsDialogComponent } from '../../shared/telemetry-details-
 
 @Component({
   selector: 'app-errors',
-  imports: [CommonModule, FormsModule, IButton, ICard, IChart, ISelect, ITable, TooltipDirective],
+  imports: [
+    PageLayoutComponent,
+    PageHeaderActionsDirective,
+    CommonModule,
+    FormsModule,
+    IButton,
+    ICard,
+    IChart,
+    ISelect,
+    ITable,
+    TooltipDirective,
+  ],
   templateUrl: './errors.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './errors.scss',
 })
 export class Errors {
@@ -103,9 +123,8 @@ export class Errors {
 
   private groupKey(event: TelemetryEventDto): string {
     return (
-      [event.exceptionType, event.operation, event.route]
-        .filter(Boolean)
-        .join(' / ') || 'Unclassified error'
+      [event.exceptionType, event.operation, event.route].filter(Boolean).join(' / ') ||
+      'Unclassified error'
     );
   }
 

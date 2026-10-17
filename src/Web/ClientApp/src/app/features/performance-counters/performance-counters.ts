@@ -1,7 +1,25 @@
+import { PageLayoutComponent, PageHeaderActionsDirective } from 'invensys-ng';
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { GridData, IButton, ICard, IChart, IChartData, ISelect, ITable, NoContentComponent, TooltipDirective } from 'invensys-ng';
+import {
+  GridData,
+  IButton,
+  ICard,
+  IChart,
+  IChartData,
+  ISelect,
+  ITable,
+  NoContentComponent,
+  TooltipDirective,
+} from 'invensys-ng';
 import {
   ITraceApiService,
   PerformanceCounterDailySummaryDto,
@@ -31,6 +49,8 @@ type MetricName =
 @Component({
   selector: 'app-performance-counters',
   imports: [
+    PageLayoutComponent,
+    PageHeaderActionsDirective,
     CommonModule,
     FormsModule,
     IButton,
@@ -42,6 +62,7 @@ type MetricName =
     TooltipDirective,
   ],
   templateUrl: './performance-counters.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './performance-counters.scss',
 })
 export class PerformanceCounters implements OnInit {
@@ -61,16 +82,40 @@ export class PerformanceCounters implements OnInit {
   protected readonly machineCharts = computed<ChartPanel[]>(() => {
     const series = this.counters()?.series ?? [];
     return [
-      this.buildChart('machine-load', 'Machine load', series, ['CpuUsagePercent', 'MemoryUsagePercent', 'DiskUsagePercent'], 'Machine'),
-      this.buildChart('machine-network', 'Machine network', series, ['NetworkReceiveBytesPerSecond', 'NetworkTransmitBytesPerSecond'], 'Machine'),
+      this.buildChart(
+        'machine-load',
+        'Machine load',
+        series,
+        ['CpuUsagePercent', 'MemoryUsagePercent', 'DiskUsagePercent'],
+        'Machine',
+      ),
+      this.buildChart(
+        'machine-network',
+        'Machine network',
+        series,
+        ['NetworkReceiveBytesPerSecond', 'NetworkTransmitBytesPerSecond'],
+        'Machine',
+      ),
     ].filter((chart): chart is ChartPanel => !!chart);
   });
 
   protected readonly containerCharts = computed<ChartPanel[]>(() => {
     const series = this.counters()?.series ?? [];
     return [
-      this.buildChart('container-load', 'Container load', series, ['CpuUsagePercent', 'MemoryUsagePercent'], 'Container'),
-      this.buildChart('container-network', 'Container network', series, ['NetworkReceiveBytesPerSecond', 'NetworkTransmitBytesPerSecond'], 'Container'),
+      this.buildChart(
+        'container-load',
+        'Container load',
+        series,
+        ['CpuUsagePercent', 'MemoryUsagePercent'],
+        'Container',
+      ),
+      this.buildChart(
+        'container-network',
+        'Container network',
+        series,
+        ['NetworkReceiveBytesPerSecond', 'NetworkTransmitBytesPerSecond'],
+        'Container',
+      ),
     ].filter((chart): chart is ChartPanel => !!chart);
   });
 
@@ -161,8 +206,12 @@ export class PerformanceCounters implements OnInit {
     metrics: MetricName[],
     scope: 'Machine' | 'Container',
   ): ChartPanel | null {
-    const matching = series.filter((item) => item.scope === scope && metrics.includes(item.metric as MetricName));
-    const labels = Array.from(new Set(matching.flatMap((item) => item.points?.map((point) => point.timestamp ?? '') ?? [])))
+    const matching = series.filter(
+      (item) => item.scope === scope && metrics.includes(item.metric as MetricName),
+    );
+    const labels = Array.from(
+      new Set(matching.flatMap((item) => item.points?.map((point) => point.timestamp ?? '') ?? [])),
+    )
       .filter(Boolean)
       .sort();
 
@@ -170,23 +219,34 @@ export class PerformanceCounters implements OnInit {
       return null;
     }
 
-    const colors = ['--cyan-500', '--orange-500', '--green-500', '--indigo-500', '--rose-500', '--amber-500'];
+    const colors = [
+      '--cyan-500',
+      '--orange-500',
+      '--green-500',
+      '--indigo-500',
+      '--rose-500',
+      '--amber-500',
+    ];
 
     return {
       title,
-      charts: [{
-        chartId,
-        chartType: 'line',
-        labels: labels.map((label) => this.formatTime(label)),
-        dataSets: matching.map((item, index) => {
-          const values = new Map((item.points ?? []).map((point) => [point.timestamp, point.value ?? 0]));
-          return {
-            label: `${item.sourceName ?? 'Unknown'} ${this.metricLabel(item.metric)}`,
-            data: labels.map((label) => values.get(label) ?? 0),
-            backgroundColors: [colors[index % colors.length]],
-          };
-        }),
-      }],
+      charts: [
+        {
+          chartId,
+          chartType: 'line',
+          labels: labels.map((label) => this.formatTime(label)),
+          dataSets: matching.map((item, index) => {
+            const values = new Map(
+              (item.points ?? []).map((point) => [point.timestamp, point.value ?? 0]),
+            );
+            return {
+              label: `${item.sourceName ?? 'Unknown'} ${this.metricLabel(item.metric)}`,
+              data: labels.map((label) => values.get(label) ?? 0),
+              backgroundColors: [colors[index % colors.length]],
+            };
+          }),
+        },
+      ],
     };
   }
 

@@ -1,15 +1,9 @@
+import { PageLayoutComponent } from 'invensys-ng';
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
-import {
-  GridData,
-  IButton,
-  ICard,
-  IInputText,
-  ITable,
-  NoContentComponent,
-} from 'invensys-ng';
+import { GridData, IButton, ICard, IInputText, ITable, NoContentComponent } from 'invensys-ng';
 import {
   ApplicationDto,
   ITraceApiService,
@@ -21,6 +15,7 @@ import { formatDateTime } from '../../shared/application-selector';
 @Component({
   selector: 'app-applications',
   imports: [
+    PageLayoutComponent,
     CommonModule,
     ReactiveFormsModule,
     IButton,
@@ -30,6 +25,7 @@ import { formatDateTime } from '../../shared/application-selector';
     NoContentComponent,
   ],
   templateUrl: './applications.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './applications.scss',
 })
 export class Applications {
@@ -88,24 +84,26 @@ export class Applications {
       description: formValue.description || undefined,
     };
 
-    this.api.registerApplication(request).pipe(
-      finalize(() => this.saving.set(false)),
-    ).subscribe({
-      next: (application) => {
-        this.lastCreatedDsn.set(application.dsn ?? null);
-        this.form.reset({
-          name: '',
-          environment: 'Production',
-          description: '',
-        });
-        this.applicationContext.refreshApplications();
-      },
-      error: (error: unknown) => this.saveError.set(
-        typeof error === 'string' && error.trim()
-          ? error
-          : 'Unable to assign a DSN. Please try again. If the problem persists, contact your administrator.',
-      ),
-    });
+    this.api
+      .registerApplication(request)
+      .pipe(finalize(() => this.saving.set(false)))
+      .subscribe({
+        next: (application) => {
+          this.lastCreatedDsn.set(application.dsn ?? null);
+          this.form.reset({
+            name: '',
+            environment: 'Production',
+            description: '',
+          });
+          this.applicationContext.refreshApplications();
+        },
+        error: (error: unknown) =>
+          this.saveError.set(
+            typeof error === 'string' && error.trim()
+              ? error
+              : 'Unable to assign a DSN. Please try again. If the problem persists, contact your administrator.',
+          ),
+      });
   }
 
   protected copyLastDsn(): void {

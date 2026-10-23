@@ -9,13 +9,16 @@ public sealed class DsnGenerator : IDsnGenerator
     public string Create(string applicationName, string environment)
     {
         var entropy = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
+
         var slug = Slugify($"{applicationName}-{environment}");
+
         return $"itrace://{slug}-{entropy}";
     }
 
     public string Hash(string dsn)
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(dsn));
+
         return Convert.ToHexString(bytes);
     }
 

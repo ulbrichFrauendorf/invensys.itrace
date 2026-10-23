@@ -1,4 +1,4 @@
-<i-layout [config]="layoutConfig" [menuModel]="menuModel">
+<i-layout [config]="layoutConfig" [menuModel]="menuModel()">
   <div topbarActions class="topbar-actions">
     <i-select
       class="application-selector"
@@ -13,5 +13,15 @@
       (ngModelChange)="applicationContext.selectApplication($event)"
     />
     <i-tag value="Collector" severity="success" icon="pi pi-circle-fill" [rounded]="true" />
+    <i-button
+      icon="pi pi-sign-out"
+      severity="contrast"
+      size="medium"
+      [text]="true"
+      ariaLabel="Sign out"
+      iTooltip="Sign out"
+      tooltipPosition="below"
+      (clicked)="auth.logoff().subscribe()"
+    />
   </div>
 </i-layout>

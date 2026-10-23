@@ -21,6 +21,7 @@ public sealed class RequestDurations : EndpointGroupBase
         CancellationToken cancellationToken)
     {
         var response = await queries.GetEventsAsync(TelemetrySignal.RequestDuration, applicationId, take, cancellationToken);
+
         return TypedResults.Ok(response);
     }
 }

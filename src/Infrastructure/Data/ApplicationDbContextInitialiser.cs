@@ -14,9 +14,11 @@ public static class InitialiserExtensions
     public static async Task InitialiseDatabaseAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
+
         var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
 
         await initialiser.InitialiseAsync();
+
         await initialiser.SeedAsync();
     }
 }
@@ -36,6 +38,7 @@ public sealed class ApplicationDbContextInitialiser(
         catch (Exception ex)
         {
             logger.LogError(ex, "An error occurred while initialising the iTrace database.");
+
             throw;
         }
     }
@@ -49,6 +52,7 @@ public sealed class ApplicationDbContextInitialiser(
         catch (Exception ex)
         {
             logger.LogError(ex, "An error occurred while seeding the iTrace database.");
+
             throw;
         }
     }
@@ -80,7 +84,9 @@ public sealed class ApplicationDbContextInitialiser(
             }
 
             var dsn = dsnGenerator.Create(seed.Name!, seed.Environment);
+
             var now = DateTime.UtcNow;
+
             context.Applications.Add(new DomainApplication
             {
                 Id = Guid.NewGuid(),

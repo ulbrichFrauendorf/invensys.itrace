@@ -14,6 +14,7 @@ public sealed class ITraceDbCommandInterceptor(
         DbDataReader result)
     {
         Track(command, eventData, "Reader");
+
         return result;
     }
 
@@ -24,6 +25,7 @@ public sealed class ITraceDbCommandInterceptor(
         CancellationToken cancellationToken = default)
     {
         Track(command, eventData, "Reader");
+
         return ValueTask.FromResult(result);
     }
 
@@ -33,6 +35,7 @@ public sealed class ITraceDbCommandInterceptor(
         int result)
     {
         Track(command, eventData, "NonQuery");
+
         return result;
     }
 
@@ -43,6 +46,7 @@ public sealed class ITraceDbCommandInterceptor(
         CancellationToken cancellationToken = default)
     {
         Track(command, eventData, "NonQuery");
+
         return ValueTask.FromResult(result);
     }
 
@@ -52,6 +56,7 @@ public sealed class ITraceDbCommandInterceptor(
         object? result)
     {
         Track(command, eventData, "Scalar");
+
         return result;
     }
 
@@ -62,12 +67,14 @@ public sealed class ITraceDbCommandInterceptor(
         CancellationToken cancellationToken = default)
     {
         Track(command, eventData, "Scalar");
+
         return ValueTask.FromResult(result);
     }
 
     public override void CommandFailed(DbCommand command, CommandErrorEventData eventData)
     {
         Track(command, eventData, "CommandFailed");
+
         _ = telemetryClient.TrackErrorAsync(eventData.Exception, "Database command");
     }
 
@@ -77,6 +84,7 @@ public sealed class ITraceDbCommandInterceptor(
         CancellationToken cancellationToken = default)
     {
         Track(command, eventData, "CommandFailed");
+
         return telemetryClient.TrackErrorAsync(
             eventData.Exception,
             "Database command",

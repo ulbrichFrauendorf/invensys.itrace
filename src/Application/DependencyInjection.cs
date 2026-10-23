@@ -9,7 +9,9 @@ public static class DependencyInjection
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddScoped<TelemetryIngestionService>();
+
         services.AddScoped<TelemetryQueryService>();
+
         services.AddScoped<PerformanceCounterQueryService>();
 
         return services;

@@ -17,6 +17,7 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
         services.Configure<ITraceOptions>(configuration.GetSection(ITraceOptions.SectionName));
+
         return services.AddITraceCore();
     }
 
@@ -25,6 +26,7 @@ public static class ServiceCollectionExtensions
         Action<ITraceOptions> configure)
     {
         services.Configure(configure);
+
         return services.AddITraceCore();
     }
 
@@ -34,6 +36,7 @@ public static class ServiceCollectionExtensions
     public static ILoggingBuilder AddITrace(this ILoggingBuilder logging)
     {
         logging.Services.AddSingleton<ILoggerProvider, ITraceLoggerProvider>();
+
         return logging;
     }
 
@@ -47,15 +50,20 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(sp =>
         {
             var options = sp.GetRequiredService<IOptions<ITraceOptions>>().Value;
+
             return new ITraceTelemetryQueue(options.QueueCapacity);
         });
 
         services.AddSingleton<IITraceTelemetryClient, ITraceTelemetryClient>();
+
         services.AddSingleton<ITraceDbCommandInterceptor>();
+
         services.AddHostedService<ITraceTelemetryWorker>();
+
         services.AddHttpClient(HttpClientName, (sp, client) =>
         {
             var options = sp.GetRequiredService<IOptionsMonitor<ITraceOptions>>().CurrentValue;
+
             if (options.CollectorEndpoint is not null)
             {
                 client.BaseAddress = options.CollectorEndpoint;

@@ -7,6 +7,7 @@ public static class WebApplicationExtensions
     public static RouteGroupBuilder MapGroup(this WebApplication app, EndpointGroupBase group)
     {
         return app.MapGroup($"/api/{group.GroupName}")
+            .RequireAuthorization()
             .WithGroupName(group.GroupName)
             .WithTags(group.GroupName);
     }
@@ -14,7 +15,9 @@ public static class WebApplicationExtensions
     public static WebApplication MapEndpoints(this WebApplication app)
     {
         var endpointGroupType = typeof(EndpointGroupBase);
+
         var assembly = Assembly.GetExecutingAssembly();
+
         var endpointGroupTypes = assembly.GetExportedTypes().Where(type => type.IsSubclassOf(endpointGroupType));
 
         foreach (var type in endpointGroupTypes)

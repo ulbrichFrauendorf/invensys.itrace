@@ -27,9 +27,13 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString));
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+
         services.AddScoped<ApplicationDbContextInitialiser>();
+
         services.AddSingleton<IDsnGenerator, DsnGenerator>();
+
         services.Configure<PerformanceCounterOptions>(configuration.GetSection("ITrace:PerformanceCounters"));
+
         services.AddHostedService<PerformanceCounterCollectorHostedService>();
 
         services.AddCors(options =>
@@ -65,6 +69,7 @@ public static class DependencyInjection
                     tracing.AddOtlpExporter(options =>
                     {
                         options.Endpoint = endpoint;
+
                         options.Protocol = OtlpExportProtocol.Grpc;
                     });
                 }
@@ -81,6 +86,7 @@ public static class DependencyInjection
                     metrics.AddOtlpExporter(options =>
                     {
                         options.Endpoint = endpoint;
+
                         options.Protocol = OtlpExportProtocol.Grpc;
                     });
                 }

@@ -20,6 +20,7 @@ public sealed class PerformanceCounters : EndpointGroupBase
         CancellationToken cancellationToken)
     {
         var counters = await queries.GetPerformanceCountersAsync(intervalMinutes, cancellationToken);
+
         return TypedResults.Ok(counters);
     }
 }

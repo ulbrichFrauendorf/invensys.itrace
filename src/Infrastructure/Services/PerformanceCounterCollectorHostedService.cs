@@ -30,12 +30,14 @@ public sealed class PerformanceCounterCollectorHostedService(
         if (!options.Value.Enabled)
         {
             logger.LogInformation("Performance counter collection is disabled.");
+
             return;
         }
 
         while (!stoppingToken.IsCancellationRequested)
         {
             await CollectOnceAsync(stoppingToken);
+
             await Task.Delay(TimeSpan.FromSeconds(Math.Max(10, options.Value.CollectionIntervalSeconds)), stoppingToken);
         }
     }
@@ -45,9 +47,11 @@ public sealed class PerformanceCounterCollectorHostedService(
         try
         {
             var samples = new List<PerformanceCounterSample>();
+
             var occurredAtUtc = DateTime.UtcNow;
 
             var machine = CollectMachineSample(occurredAtUtc);
+
             if (machine is not null)
             {
                 samples.Add(machine);
@@ -61,10 +65,15 @@ public sealed class PerformanceCounterCollectorHostedService(
             }
 
             using var scope = scopeFactory.CreateScope();
+
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
             db.PerformanceCounterSamples.AddRange(samples);
+
             await UpdateDailySummariesAsync(db, samples, cancellationToken);
+
             await DeleteExpiredSamplesAsync(db, occurredAtUtc, cancellationToken);
+
             await db.SaveChangesAsync(cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -84,11 +93,15 @@ public sealed class PerformanceCounterCollectorHostedService(
         }
 
         var previousCpu = cpuTotals;
+
         var currentCpu = ReadCpuTotals();
+
         cpuTotals = currentCpu;
 
         var memory = ReadMemory();
+
         var disk = ReadDisk();
+
         var network = ReadNetworkRate("machine");
 
         return new PerformanceCounterSample
@@ -112,19 +125,23 @@ public sealed class PerformanceCounterCollectorHostedService(
     private static CpuTotals? ReadCpuTotals()
     {
         var line = File.ReadLines("/proc/stat").FirstOrDefault(value => value.StartsWith("cpu ", StringComparison.Ordinal));
+
         if (line is null)
         {
             return null;
         }
 
         var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Select(ParseLong).ToArray();
+
         if (parts.Length < 4)
         {
             return null;
         }
 
         var idle = parts[3] + (parts.Length > 4 ? parts[4] : 0);
+
         var total = parts.Sum();
+
         return new CpuTotals(idle, total);
     }
 
@@ -136,16 +153,22 @@ public sealed class PerformanceCounterCollectorHostedService(
             .ToDictionary(parts => parts[0], parts => ParseLong(parts[1].Replace("kB", string.Empty, StringComparison.OrdinalIgnoreCase)) * 1024);
 
         var total = values.GetValueOrDefault("MemTotal");
+
         var available = values.GetValueOrDefault("MemAvailable");
+
         var used = Math.Max(0, total - available);
+
         return new MemorySnapshot(total == 0 ? null : used * 100d / total, used, total);
     }
 
     private static DiskSnapshot ReadDisk()
     {
         var root = new DriveInfo("/");
+
         var total = root.TotalSize;
+
         var used = total - root.AvailableFreeSpace;
+
         return new DiskSnapshot(total == 0 ? null : used * 100d / total, used, total);
     }
 
@@ -158,6 +181,7 @@ public sealed class PerformanceCounterCollectorHostedService(
             .Select(parts =>
             {
                 var fields = parts[1].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
                 return new NetworkTotals(ParseLong(fields[0]), ParseLong(fields[8]), DateTime.UtcNow);
             })
             .Aggregate(new NetworkTotals(0, 0, DateTime.UtcNow), (sum, item) => new NetworkTotals(
@@ -168,11 +192,14 @@ public sealed class PerformanceCounterCollectorHostedService(
         if (!networkTotals.TryGetValue(sourceId, out var previous))
         {
             networkTotals[sourceId] = totals;
+
             return new NetworkRate(null, null);
         }
 
         networkTotals[sourceId] = totals;
+
         var seconds = Math.Max(1, (totals.TimestampUtc - previous.TimestampUtc).TotalSeconds);
+
         return new NetworkRate(
             Math.Max(0, totals.ReceiveBytes - previous.ReceiveBytes) / seconds,
             Math.Max(0, totals.TransmitBytes - previous.TransmitBytes) / seconds);
@@ -188,11 +215,13 @@ public sealed class PerformanceCounterCollectorHostedService(
         }
 
         using var client = CreateDockerClient();
+
         var containers = await client.GetFromJsonAsync<List<DockerContainer>>(
             "http://docker/containers/json",
             cancellationToken) ?? [];
 
         var samples = new List<PerformanceCounterSample>();
+
         foreach (var container in containers)
         {
             var stats = await client.GetFromJsonAsync<DockerStats>(
@@ -205,6 +234,7 @@ public sealed class PerformanceCounterCollectorHostedService(
             }
 
             var name = container.Names?.FirstOrDefault()?.Trim('/') ?? container.Id[..Math.Min(12, container.Id.Length)];
+
             var network = CalculateDockerNetworkRate(container.Id, stats);
 
             samples.Add(new PerformanceCounterSample
@@ -234,7 +264,9 @@ public sealed class PerformanceCounterCollectorHostedService(
             ConnectCallback = async (_, cancellationToken) =>
             {
                 var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
+
                 await socket.ConnectAsync(new UnixDomainSocketEndPoint("/var/run/docker.sock"), cancellationToken);
+
                 return new NetworkStream(socket, ownsSocket: true);
             }
         };
@@ -252,11 +284,14 @@ public sealed class PerformanceCounterCollectorHostedService(
         if (!dockerNetworkTotals.TryGetValue(sourceId, out var previous))
         {
             dockerNetworkTotals[sourceId] = current;
+
             return new NetworkRate(null, null);
         }
 
         dockerNetworkTotals[sourceId] = current;
+
         var seconds = Math.Max(1, (current.TimestampUtc - previous.TimestampUtc).TotalSeconds);
+
         return new NetworkRate(
             Math.Max(0, current.ReceiveBytes - previous.ReceiveBytes) / seconds,
             Math.Max(0, current.TransmitBytes - previous.TransmitBytes) / seconds);
@@ -272,6 +307,7 @@ public sealed class PerformanceCounterCollectorHostedService(
             foreach (var metric in Values(sample))
             {
                 var day = DateOnly.FromDateTime(sample.OccurredAtUtc);
+
                 var summary = await db.PerformanceCounterDailySummaries
                     .FirstOrDefaultAsync(existing => existing.Day == day
                         && existing.Scope == sample.Scope
@@ -279,6 +315,7 @@ public sealed class PerformanceCounterCollectorHostedService(
                         && existing.Metric == metric.Metric, cancellationToken);
 
                 var isAlert = IsHighAlert(metric.Metric, metric.Value);
+
                 if (summary is null)
                 {
                     db.PerformanceCounterDailySummaries.Add(new PerformanceCounterDailySummary
@@ -295,15 +332,22 @@ public sealed class PerformanceCounterCollectorHostedService(
                         AlertHighCount = isAlert ? 1 : 0,
                         UpdatedAtUtc = DateTime.UtcNow
                     });
+
                     continue;
                 }
 
                 summary.SourceName = sample.SourceName;
+
                 summary.Minimum = Math.Min(summary.Minimum, metric.Value);
+
                 summary.Maximum = Math.Max(summary.Maximum, metric.Value);
+
                 summary.Average = ((summary.Average * summary.SampleCount) + metric.Value) / (summary.SampleCount + 1);
+
                 summary.SampleCount++;
+
                 summary.AlertHighCount += isAlert ? 1 : 0;
+
                 summary.UpdatedAtUtc = DateTime.UtcNow;
             }
         }
@@ -315,6 +359,7 @@ public sealed class PerformanceCounterCollectorHostedService(
         CancellationToken cancellationToken)
     {
         var cutoff = occurredAtUtc.AddHours(-Math.Max(24, options.Value.SampleRetentionHours));
+
         await db.PerformanceCounterSamples
             .Where(sample => sample.OccurredAtUtc < cutoff)
             .ExecuteDeleteAsync(cancellationToken);
@@ -364,15 +409,20 @@ public sealed class PerformanceCounterCollectorHostedService(
     private static double? CalculateCpuPercent(CpuTotals previous, CpuTotals current)
     {
         var totalDelta = current.Total - previous.Total;
+
         var idleDelta = current.Idle - previous.Idle;
+
         return totalDelta <= 0 ? null : Math.Clamp((totalDelta - idleDelta) * 100d / totalDelta, 0, 100);
     }
 
     private static double? CalculateDockerCpuPercent(DockerStats stats)
     {
         var cpuDelta = stats.CpuStats?.CpuUsage?.TotalUsage - stats.PreCpuStats?.CpuUsage?.TotalUsage;
+
         var systemDelta = stats.CpuStats?.SystemCpuUsage - stats.PreCpuStats?.SystemCpuUsage;
+
         var onlineCpus = stats.CpuStats?.OnlineCpus ?? stats.CpuStats?.CpuUsage?.PercpuUsage?.Count ?? 1;
+
         return cpuDelta > 0 && systemDelta > 0
             ? Math.Max(0, cpuDelta.Value / systemDelta.Value * onlineCpus * 100d)
             : null;

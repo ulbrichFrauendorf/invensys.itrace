@@ -5,6 +5,8 @@ using Invensys.ITrace.Infrastructure.Data;
 using Invensys.ITrace.Web.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Invensys.ITrace.Web.Security;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Invensys.ITrace.Web.Endpoints;
 
@@ -19,7 +21,7 @@ public sealed class Applications : EndpointGroupBase
             .MapPost(RegisterApplication);
     }
 
-    public static async Task<Ok<List<ApplicationDto>>> ListApplications(ApplicationDbContext db, CancellationToken cancellationToken)
+    public static async Task<Ok<List<ApplicationDto>>> ListApplications(ApplicationDbContext db, HttpContext context, IAuthorizationService authorization, CancellationToken cancellationToken)
     {
         var applications = await db.Applications
             .AsNoTracking()
@@ -28,9 +30,12 @@ public sealed class Applications : EndpointGroupBase
             .Select(application => application.ToDto())
             .ToListAsync(cancellationToken);
 
-        return TypedResults.Ok(applications);
+        var canManage = (await authorization.AuthorizeAsync(context.User, ITraceAuthorization.Administrator)).Succeeded;
+
+        return TypedResults.Ok(canManage ? applications : applications.Select(application => application with { Dsn = "" }).ToList());
     }
 
+    [Authorize(Policy = ITraceAuthorization.Administrator)]
     public static async Task<Results<Created<ApplicationDto>, BadRequest<string>, Conflict<string>>> RegisterApplication(
         RegisterApplicationRequest request,
         ApplicationDbContext db,
@@ -41,7 +46,6 @@ public sealed class Applications : EndpointGroupBase
         {
             return TypedResults.BadRequest("Application name is required.");
         }
-
 
         var environment = string.IsNullOrWhiteSpace(request.Environment)
             ? "Production"
@@ -58,7 +62,9 @@ public sealed class Applications : EndpointGroupBase
         }
 
         var dsn = dsnGenerator.Create(request.Name, environment);
+
         var now = DateTime.UtcNow;
+
         var application = new DomainApplication
         {
             Id = Guid.NewGuid(),
@@ -73,6 +79,7 @@ public sealed class Applications : EndpointGroupBase
         };
 
         db.Applications.Add(application);
+
         await db.SaveChangesAsync(cancellationToken);
 
         return TypedResults.Created($"/api/applications/{application.Id}", application.ToDto());

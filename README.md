@@ -32,6 +32,14 @@ npm start
 
 Open `https://localhost:44449`. The dashboard proxies API calls to the local collector.
 
+### iServe authentication
+
+The dashboard uses the same iServe OIDC authorization-code + PKCE pattern as Integra Flow. The issuer, audience, SPA authority, public client ID, and scopes are stored directly in `src/Web/appsettings.json` under `JwtConfig` and `AngularSettings`. These are public configuration values and do not require GitHub Actions secrets or user-secrets. Keep the configured client and scopes aligned with the iServe registration.
+
+Register `https://localhost:44449/callback` and the SPA origin on iServe. Users need the `itrace.access` system claim and an `itrace.user`, `itrace.administrator`, or `itrace.superuser` role in their access token. Application registration and DSN visibility require an administrator or superuser. Telemetry senders continue using their existing DSN.
+
+See [production setup](DeployProd.md#configure-iserve-sign-in) for the iServe client configuration. The SPA uses a public client with no client secret.
+
 ## Add iTrace to an Application
 
 Install or reference `Invensys.ITrace.Client`, then register the services and middleware:

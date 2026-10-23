@@ -41,15 +41,20 @@ internal sealed class ITraceTelemetryClient(
         CancellationToken cancellationToken = default)
     {
         var currentOptions = options.CurrentValue;
+
         if (!currentOptions.IsUsable || !currentOptions.CaptureErrors || cancellationToken.IsCancellationRequested)
         {
             return ValueTask.CompletedTask;
         }
 
         using var activityScope = StartOrEnrichActivity("itrace.error", ActivityKind.Internal);
+
         var activity = activityScope.Activity;
+
         activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+
         activity?.AddException(exception);
+
         ApplyAttributes(activity, attributes);
 
         return EnqueueAsync(new TelemetryEnvelope(
@@ -84,19 +89,28 @@ internal sealed class ITraceTelemetryClient(
         CancellationToken cancellationToken = default)
     {
         var currentOptions = options.CurrentValue;
+
         if (!currentOptions.IsUsable || !currentOptions.CaptureRequestDurations || cancellationToken.IsCancellationRequested)
         {
             return ValueTask.CompletedTask;
         }
 
         var severity = durationMs >= currentOptions.SlowRequestThresholdMs ? "Warning" : "Information";
+
         var activityName = string.IsNullOrWhiteSpace(route) ? method : $"{method} {route}";
+
         using var activityScope = StartOrEnrichActivity(activityName, ActivityKind.Server);
+
         var activity = activityScope.Activity;
+
         activity?.SetTag("http.request.method", method);
+
         activity?.SetTag("http.route", route);
+
         activity?.SetTag("http.response.status_code", statusCode);
+
         activity?.SetTag("itrace.duration_ms", durationMs);
+
         ApplyAttributes(activity, attributes);
 
         if (statusCode >= 500)
@@ -137,18 +151,26 @@ internal sealed class ITraceTelemetryClient(
         CancellationToken cancellationToken = default)
     {
         var currentOptions = options.CurrentValue;
+
         if (!currentOptions.IsUsable || !currentOptions.CaptureDbDurations || cancellationToken.IsCancellationRequested)
         {
             return ValueTask.CompletedTask;
         }
 
         var severity = durationMs >= currentOptions.SlowDbThresholdMs ? "Warning" : "Information";
+
         using var activityScope = StartOrEnrichActivity($"DB {operation}", ActivityKind.Client);
+
         var activity = activityScope.Activity;
+
         activity?.SetTag("db.operation.name", operation);
+
         activity?.SetTag("db.namespace", database);
+
         activity?.SetTag("db.system.name", dbSystem);
+
         activity?.SetTag("itrace.duration_ms", durationMs);
+
         ApplyAttributes(activity, attributes);
 
         return EnqueueAsync(new TelemetryEnvelope(
@@ -177,12 +199,14 @@ internal sealed class ITraceTelemetryClient(
     private ValueTask EnqueueAsync(TelemetryEnvelope envelope, CancellationToken cancellationToken)
     {
         queue.TryWrite(envelope, cancellationToken);
+
         return ValueTask.CompletedTask;
     }
 
     private static ActivityScope StartOrEnrichActivity(string name, ActivityKind kind)
     {
         var activity = ITraceDiagnostics.ActivitySource.StartActivity(name, kind);
+
         return activity is not null
             ? new ActivityScope(activity, ownsActivity: true)
             : new ActivityScope(Activity.Current, ownsActivity: false);

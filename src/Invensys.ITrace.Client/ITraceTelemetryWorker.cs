@@ -24,6 +24,7 @@ internal sealed class ITraceTelemetryWorker(
     private async Task SendAsync(TelemetryEnvelope envelope, CancellationToken cancellationToken)
     {
         var currentOptions = options.CurrentValue;
+
         if (!currentOptions.IsUsable)
         {
             return;
@@ -32,17 +33,23 @@ internal sealed class ITraceTelemetryWorker(
         try
         {
             var client = httpClientFactory.CreateClient(ServiceCollectionExtensions.HttpClientName);
+
             using var activity = ITraceDiagnostics.ActivitySource.StartActivity("iTrace export", ActivityKind.Client);
+
             activity?.SetTag("server.address", client.BaseAddress?.Host);
+
             activity?.SetTag("url.path", currentOptions.TelemetryPath);
+
             activity?.SetTag("itrace.signal", envelope.Signal.ToString());
 
             var response = await client.PostAsJsonAsync(currentOptions.TelemetryPath, envelope, cancellationToken);
+
             activity?.SetTag("http.response.status_code", (int)response.StatusCode);
 
             if (!response.IsSuccessStatusCode)
             {
                 activity?.SetStatus(ActivityStatusCode.Error);
+
                 logger.LogWarning(
                     "iTrace collector rejected telemetry with status {StatusCode}",
                     (int)response.StatusCode);

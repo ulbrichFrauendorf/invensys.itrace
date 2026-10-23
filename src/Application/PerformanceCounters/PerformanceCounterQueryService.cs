@@ -24,7 +24,9 @@ public sealed class PerformanceCounterQueryService(
         CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
+
         var windowStart = now.AddHours(-24);
+
         var safeInterval = Math.Clamp(intervalMinutes ?? options.Value.GraphIntervalMinutes, 1, 60);
 
         var samples = await db.PerformanceCounterSamples
@@ -56,6 +58,7 @@ public sealed class PerformanceCounterQueryService(
             .ToList();
 
         var summaryStart = DateOnly.FromDateTime(now.AddDays(-30));
+
         var summaries = await db.PerformanceCounterDailySummaries
             .AsNoTracking()
             .Where(summary => summary.Day >= summaryStart)
@@ -100,6 +103,7 @@ public sealed class PerformanceCounterQueryService(
         int intervalMinutes)
     {
         var bucketTicks = TimeSpan.FromMinutes(intervalMinutes).Ticks;
+
         var points = samples
             .Where(sample => sample.Scope == scope && sample.SourceId == sourceId)
             .Select(sample => new { sample.OccurredAtUtc, Value = ValueFor(sample, metric) })

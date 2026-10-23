@@ -19,7 +19,9 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
         CancellationToken cancellationToken = default)
     {
         var safeWindowMinutes = Math.Clamp(windowMinutes ?? 24 * 60, 1, 30 * 24 * 60);
+
         var windowEnd = DateTime.UtcNow;
+
         var windowStart = windowEnd.AddMinutes(-safeWindowMinutes);
 
         var applications = await db.Applications
@@ -30,6 +32,7 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
             .ToListAsync(cancellationToken);
 
         var applicationIds = applications.Select(application => application.Id).ToArray();
+
         var records = await db.TelemetryRecords
             .AsNoTracking()
             .Where(record => applicationIds.Contains(record.ApplicationId)
@@ -44,8 +47,11 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
                 .ToArray();
 
             var errorCount = applicationRecords.Count(record => record.Signal == TelemetrySignal.Error);
+
             var requestSummary = Summarize(applicationRecords, TelemetrySignal.RequestDuration);
+
             var databaseSummary = Summarize(applicationRecords, TelemetrySignal.DbDuration);
+
             var status = ClassifyHealth(application.LastSeenAtUtc, errorCount, requestSummary.P95Ms, databaseSummary.P95Ms);
 
             return new ApplicationHealthDto(
@@ -79,6 +85,7 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
         CancellationToken cancellationToken = default)
     {
         var safeTake = Math.Clamp(take ?? 100, 1, 500);
+
         var query = db.TelemetryRecords
             .AsNoTracking()
             .Include(record => record.Application)

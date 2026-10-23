@@ -108,7 +108,6 @@ jobs:
           script_stop: true
           timeout: 120s
           command_timeout: 60m
-          debug: true
           envs: VERSION,MSSQL_SA_PASSWORD,APP_NAME,DEPLOY_APP_PATH
           script: |
             set -euo pipefail
@@ -164,6 +163,7 @@ jobs:
 
             git checkout "tags/${VERSION}" -f
 
+            umask 077
             : > .env
             printf "%s='%s'\n" ASPNETCORE_ENVIRONMENT Production >> .env
             printf "%s='%s'\n" WEB_PORT 8082 >> .env

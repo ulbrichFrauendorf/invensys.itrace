@@ -15,8 +15,11 @@ public static class MetricMath
         }
 
         var normalized = Math.Clamp(percentile, 0, 100) / 100;
+
         var position = (ordered.Length - 1) * normalized;
+
         var lower = (int)Math.Floor(position);
+
         var upper = (int)Math.Ceiling(position);
 
         if (lower == upper)
@@ -25,6 +28,7 @@ public static class MetricMath
         }
 
         var weight = position - lower;
+
         return ordered[lower] + ((ordered[upper] - ordered[lower]) * weight);
     }
 

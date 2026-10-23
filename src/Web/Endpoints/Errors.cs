@@ -21,6 +21,7 @@ public sealed class Errors : EndpointGroupBase
         CancellationToken cancellationToken)
     {
         var response = await queries.GetEventsAsync(TelemetrySignal.Error, applicationId, take, cancellationToken);
+
         return TypedResults.Ok(response);
     }
 }

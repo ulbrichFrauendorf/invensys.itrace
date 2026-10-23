@@ -20,10 +20,7 @@ import type {
   TelemetryListResponse,
 } from '../web-api-client';
 
-export {
-  ApplicationHealthStatus,
-  TelemetrySignal,
-} from '../web-api-client';
+export { ApplicationHealthStatus, TelemetrySignal } from '../web-api-client';
 
 export type {
   ApplicationDto,
@@ -56,7 +53,10 @@ export class ITraceApiService {
     return this.applications.registerApplication(request);
   }
 
-  getDashboard(applicationId?: string | null, windowMinutes?: number | null): Observable<DashboardDto> {
+  getDashboard(
+    applicationId?: string | null,
+    windowMinutes?: number | null,
+  ): Observable<DashboardDto> {
     return this.dashboard.getDashboard(applicationId, windowMinutes);
   }
 

@@ -23,6 +23,7 @@ public sealed class Telemetry : EndpointGroupBase
         CancellationToken cancellationToken)
     {
         var result = await ingestion.IngestAsync(envelope, cancellationToken);
+
         return result.IsAccepted
             ? TypedResults.Accepted((string?)null)
             : TypedResults.BadRequest(result.Reason);
@@ -34,6 +35,7 @@ public sealed class Telemetry : EndpointGroupBase
         CancellationToken cancellationToken)
     {
         var result = await ingestion.IngestAsync(envelope, cancellationToken);
+
         return result.IsAccepted
             ? TypedResults.Accepted((string?)null)
             : TypedResults.BadRequest(result.Reason);

@@ -31,6 +31,7 @@ public sealed class Applications : EndpointGroupBase
             .ToListAsync(cancellationToken);
 
         var canManage = (await authorization.AuthorizeAsync(context.User, ITraceAuthorization.Administrator)).Succeeded;
+
         return TypedResults.Ok(canManage ? applications : applications.Select(application => application with { Dsn = "" }).ToList());
     }
 
@@ -45,7 +46,6 @@ public sealed class Applications : EndpointGroupBase
         {
             return TypedResults.BadRequest("Application name is required.");
         }
-
 
         var environment = string.IsNullOrWhiteSpace(request.Environment)
             ? "Production"
@@ -62,7 +62,9 @@ public sealed class Applications : EndpointGroupBase
         }
 
         var dsn = dsnGenerator.Create(request.Name, environment);
+
         var now = DateTime.UtcNow;
+
         var application = new DomainApplication
         {
             Id = Guid.NewGuid(),
@@ -77,6 +79,7 @@ public sealed class Applications : EndpointGroupBase
         };
 
         db.Applications.Add(application);
+
         await db.SaveChangesAsync(cancellationToken);
 
         return TypedResults.Created($"/api/applications/{application.Id}", application.ToDto());

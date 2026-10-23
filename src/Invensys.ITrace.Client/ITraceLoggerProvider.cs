@@ -37,6 +37,7 @@ internal sealed class ITraceLogger(
         }
 
         var message = formatter(state, exception);
+
         if (string.IsNullOrWhiteSpace(message) && exception is null)
         {
             return;
@@ -51,6 +52,7 @@ internal sealed class ITraceLogger(
         };
 
         var trackedException = exception ?? new ITraceLogException(message);
+
         _ = telemetryClient.TrackErrorAsync(trackedException, categoryName, attributes);
     }
 }

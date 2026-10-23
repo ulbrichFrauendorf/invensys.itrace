@@ -21,6 +21,7 @@ public sealed class Dashboard : EndpointGroupBase
         CancellationToken cancellationToken)
     {
         var dashboard = await queries.GetDashboardAsync(applicationId, windowMinutes, cancellationToken);
+
         return TypedResults.Ok(dashboard);
     }
 }

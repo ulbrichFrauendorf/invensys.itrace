@@ -8,6 +8,7 @@ public sealed class TagByGroupOperationProcessor : IOperationProcessor
     public bool Process(OperationProcessorContext context)
     {
         var operation = context.OperationDescription.Operation;
+
         var path = context.OperationDescription.Path?.Trim('/') ?? string.Empty;
 
         if (!string.IsNullOrEmpty(path))
@@ -26,6 +27,7 @@ public sealed class TagByGroupOperationProcessor : IOperationProcessor
         }
 
         var methodName = context.MethodInfo?.Name;
+
         if (string.IsNullOrWhiteSpace(operation.Summary) && !string.IsNullOrWhiteSpace(methodName))
         {
             operation.Summary = methodName;

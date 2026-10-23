@@ -13,6 +13,7 @@ public sealed class Auth : EndpointGroupBase
     public override void Map(WebApplication app)
     {
         app.MapGroup(this).AllowAnonymous().MapGet(GetSettings, "settings");
+
         app.MapGroup(this).MapGet(GetAccess, "access");
     }
 

@@ -19,8 +19,11 @@ public static class ITraceAuthorization
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
             options.Authority = jwtConfig.Issuer;
+
             options.Audience = jwtConfig.Audience;
+
             options.RequireHttpsMetadata = true;
+
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -37,14 +40,19 @@ public static class ITraceAuthorization
                 .RequireClaim(ClaimTypes.System, "itrace.access")
                 .RequireRole("itrace.user", "itrace.administrator", "itrace.superuser")
                 .Build();
+
             options.AddPolicy(Access, access);
+
             options.DefaultPolicy = access;
+
             options.FallbackPolicy = access;
+
             options.AddPolicy(Administrator, new AuthorizationPolicyBuilder()
                 .Combine(access)
                 .RequireRole("itrace.administrator", "itrace.superuser")
                 .Build());
         });
+
         return services;
     }
 }

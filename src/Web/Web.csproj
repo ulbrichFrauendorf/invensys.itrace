@@ -64,6 +64,7 @@
 
     <Message Text="$(NSwagOutput)" Condition="'$(NSwagExitCode)' == '0'" Importance="low" />
     <Error Text="$(NSwagOutput)" Condition="'$(NSwagExitCode)' != '0'" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm exec -- prettier --write src/app/web-api-client.ts" Condition="'$(NSwagExitCode)' == '0'" />
   </Target>
 
   <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">

@@ -12,6 +12,7 @@ internal sealed class ITraceRequestMiddleware(
     public async Task InvokeAsync(HttpContext context)
     {
         var startTimestamp = Stopwatch.GetTimestamp();
+
         Exception? exception = null;
 
         try
@@ -19,6 +20,7 @@ internal sealed class ITraceRequestMiddleware(
             await next(context);
 
             exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+
             if (exception is not null)
             {
                 await telemetryClient.TrackErrorAsync(
@@ -31,11 +33,13 @@ internal sealed class ITraceRequestMiddleware(
         catch (Exception ex)
         {
             exception = ex;
+
             await telemetryClient.TrackErrorAsync(
                 ex,
                 ResolveRoute(context),
                 BuildRequestAttributes(context),
                 CancellationToken.None);
+
             throw;
         }
         finally
@@ -57,6 +61,7 @@ internal sealed class ITraceRequestMiddleware(
     private static string ResolveRoute(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
+
         if (endpoint is RouteEndpoint routeEndpoint)
         {
             return routeEndpoint.RoutePattern.RawText ?? context.Request.Path.Value ?? "/";

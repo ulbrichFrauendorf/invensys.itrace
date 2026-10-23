@@ -21,6 +21,7 @@ public sealed class DbDurations : EndpointGroupBase
         CancellationToken cancellationToken)
     {
         var response = await queries.GetEventsAsync(TelemetrySignal.DbDuration, applicationId, take, cancellationToken);
+
         return TypedResults.Ok(response);
     }
 }

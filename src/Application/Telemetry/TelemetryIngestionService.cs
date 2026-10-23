@@ -24,12 +24,14 @@ public sealed class TelemetryIngestionService(
         }
 
         var dsnHash = dsnGenerator.Hash(envelope.Dsn);
+
         var application = await db.Applications
             .SingleOrDefaultAsync(candidate => candidate.DsnHash == dsnHash && candidate.IsEnabled, cancellationToken);
 
         if (application is null)
         {
             logger.LogWarning("Rejected telemetry envelope for unknown DSN hash {DsnHash}", dsnHash);
+
             return IngestionResult.Rejected("Unknown or disabled DSN.");
         }
 
@@ -62,9 +64,11 @@ public sealed class TelemetryIngestionService(
         };
 
         application.LastSeenAtUtc = record.OccurredAtUtc;
+
         application.UpdatedAtUtc = DateTime.UtcNow;
 
         db.TelemetryRecords.Add(record);
+
         await db.SaveChangesAsync(cancellationToken);
 
         return IngestionResult.Accept();
@@ -81,6 +85,7 @@ public sealed class TelemetryIngestionService(
         }
 
         var trimmed = value.Trim();
+
         return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength];
     }
 }

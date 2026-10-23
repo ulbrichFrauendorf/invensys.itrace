@@ -57,9 +57,10 @@ if [ "$attempt" -gt 60 ]; then
 fi
 
 performance_counters_url="http://localhost:${web_port}/api/performance-counters?intervalMinutes=5"
-echo "Checking performance counters endpoint at ${performance_counters_url}"
-if ! curl -fsS "$performance_counters_url" >/dev/null; then
-	echo "Performance counters endpoint check failed at ${performance_counters_url}"
+echo "Checking that performance counters require authentication"
+status="$(curl -sS -o /dev/null -w '%{http_code}' "$performance_counters_url")"
+if [ "$status" != "401" ]; then
+	echo "Expected HTTP 401 for anonymous performance counters request, received ${status}"
 	docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs --tail=200 app
 	exit 1
 fi

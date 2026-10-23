@@ -1,5 +1,6 @@
 <i-page-layout headerText="Error log" eyebrowText="Errors">
   <div iPageHeaderActions class="page-actions">
+    <i-select label="View" [options]="viewOptions" optionLabel="label" [(ngModel)]="selectedView" />
     <i-select
       label="Time range"
       [options]="timeRangeOptions"
@@ -11,21 +12,43 @@
     <i-button icon="pi pi-refresh" severity="secondary" iTooltip="Refresh" (clicked)="load()" />
   </div>
   <div class="page-sections">
+    @if (loading()) {
+      <p role="status">Loading errors…</p>
+    }
+    @if (loadError()) {
+      <p role="alert">{{ loadError() }}</p>
+    }
+    <p class="results-summary">
+      {{ filteredEvents().length }} errors in this time range, from the most recent 200 entries for
+      the selected application. Expand a grouped issue to compare occurrences, or open Details to
+      inspect the full error.
+    </p>
     @if (filteredEvents().length > 0) {
       <i-card title="Error volume">
         <i-chart [charts]="chart()" height="20rem" />
       </i-card>
-    } @else {
+    } @else if (!loading() && !loadError()) {
       <p class="empty-state">No errors in this time range</p>
     }
 
-    <i-table
-      [grid]="groupGrid()"
-      [sortable]="true"
-      [globalFilter]="true"
-      [striped]="true"
-      dataKey="groupKey"
-      height="42rem"
-    />
+    @if (selectedView.value === 'groups') {
+      <i-table
+        [grid]="groupGrid()"
+        [sortable]="true"
+        [globalFilter]="true"
+        [striped]="true"
+        dataKey="groupKey"
+        height="42rem"
+      />
+    } @else {
+      <i-table
+        [grid]="eventGrid()"
+        [sortable]="true"
+        [globalFilter]="true"
+        [striped]="true"
+        dataKey="id"
+        height="42rem"
+      />
+    }
   </div>
 </i-page-layout>

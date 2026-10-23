@@ -190,6 +190,32 @@ docker compose --profile local-sql -f docker-compose.production.yml up -d --remo
 
 For your preferred setup, do not use the `local-sql` profile.
 
+### Configure iServe sign-in
+
+Create a public SPA client on iServe, following Integra Flow's authorization-code + PKCE pattern:
+
+- Enable authorization code, require PKCE, and do not require a client secret.
+- Register redirect URI `https://itrace.invensys.web.za/callback` and post-logout URI `https://itrace.invensys.web.za`.
+- Register allowed CORS origin `https://itrace.invensys.web.za` on iServe.
+- For local development, also register `https://localhost:44449/callback`, post-logout URI and CORS origin `https://localhost:44449`. Prefer a separate development client.
+- Configure the API resource/audience to match `JwtConfig.Audience` and allow the scopes in `AngularSettings.Scope`. Enable refresh tokens and include the API scope in access tokens.
+- Emit `System.Security.Claims.ClaimTypes.System` (`http://schemas.microsoft.com/ws/2008/06/identity/claims/system`) with value `itrace.access`, and a role claim with `itrace.user`, `itrace.administrator`, or `itrace.superuser`. These are the same system/role claim types used by Integra Flow. Ensure these claims are in the **access token** for the API.
+- Users can view telemetry. Administrators and superusers can also register applications and see/copy their DSNs.
+
+Keep these public settings directly in `src/Web/appsettings.json`:
+
+| Setting | Purpose |
+| --- | --- |
+| `JwtConfig.Issuer` | Token issuer used by API validation |
+| `JwtConfig.Audience` | API audience expected in access tokens |
+| `AngularSettings.Authority` | iServe authority used by the SPA |
+| `AngularSettings.ClientId` | Public SPA client ID registered on iServe |
+| `AngularSettings.Scope` | Scopes allowed for that client |
+
+The existing values are deployed with the application. They do not require GitHub Actions secrets, `.env` entries, or Docker Compose overrides. The backend binds the named sections to `JwtConfig` and `AngularSettings` classes using `GetSection(nameof(...)).Get<T>()`, following the other Invensys apps. The frontend loads public OIDC settings from `/api/auth/settings` at runtime. The API obtains iServe's signing keys using HTTPS discovery/JWKS; no shared JWT secret is required. SQL passwords, deployment keys, and package-publishing credentials remain secrets as described above.
+
+Telemetry ingestion (`POST /api/telemetry` and `/api/telemetry/envelopes`) continues to require a valid enabled application's DSN. It does not require an interactive user token. Health checks and public OIDC bootstrap settings are available before sign-in; all management/query API routes require iServe authorization.
+
 ## 5. Deploy A Release
 
 Create and push a version tag:
@@ -203,13 +229,13 @@ git push origin v1.0.0
 
 GitHub Actions will deploy the tag.
 
-Manual deployment is also available:
+Manual package publishing is also available:
 
 ```text
-GitHub -> Actions -> Deploy Production -> Run workflow
+GitHub -> Actions -> Build and Publish NuGet Packages -> Run workflow
 ```
 
-Use `main`, a tag like `v1.0.0`, or a commit SHA as the `ref`.
+Production site deployment runs for version tags after package publication succeeds.
 
 ## 6. Add Host Nginx And SSL
 
@@ -271,6 +297,8 @@ After Certbot updates nginx, verify the public site:
 curl -I "https://${DOMAIN}/"
 curl -I "https://${DOMAIN}/health"
 ```
+
+Open the site and confirm that iServe sign-in returns to `/callback`. An anonymous request to `/api/errors` should return `401`; a valid token without iTrace claims should return `403`. Verify an iTrace user can view errors but cannot register applications or retrieve DSNs, and an administrator can manage applications. Confirm an existing instrumented application can still send telemetry with its DSN.
 
 ## 7. Verify The Site
 

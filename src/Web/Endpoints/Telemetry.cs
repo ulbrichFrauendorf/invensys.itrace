@@ -12,6 +12,7 @@ public sealed class Telemetry : EndpointGroupBase
     public override void Map(WebApplication app)
     {
         app.MapGroup(this)
+            .AllowAnonymous() // Ingestion validates the enabled application's DSN instead of a user token.
             .MapPost(IngestTelemetryEnvelope, "envelopes")
             .MapPost(IngestTelemetry);
     }

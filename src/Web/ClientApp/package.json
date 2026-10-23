@@ -23,8 +23,9 @@
     "@angular/forms": "22.2.3",
     "@angular/platform-browser": "22.2.3",
     "@angular/router": "22.2.3",
+    "angular-auth-oidc-client": "22.0.2",
     "chart.js": "^4.0.0",
-    "invensys-ng": "22.1.1",
+    "invensys-ng": "22.1.6",
     "primeicons": "^7.0.0",
     "run-script-os": "^1.1.6",
     "rxjs": "~7.8.2",
@@ -43,6 +44,7 @@
   "overrides": {
     "@istanbuljs/load-nyc-config": {
       "js-yaml": "^4.3.2"
-    }
+    },
+    "vite": "8.3.5"
   }
 }

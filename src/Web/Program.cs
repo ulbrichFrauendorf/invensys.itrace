@@ -4,12 +4,14 @@ using Invensys.ITrace.Infrastructure;
 using Invensys.ITrace.Infrastructure.Data;
 using Invensys.ITrace.Web;
 using Invensys.ITrace.Web.Infrastructure;
+using Invensys.ITrace.Web.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration, builder.Environment);
 builder.Services.AddWebServices();
+builder.Services.AddITraceAuthorization(builder.Configuration);
 
 var app = builder.Build();
 
@@ -39,11 +41,14 @@ app.UseSwaggerUi(settings =>
 });
 app.UseReDoc(options => options.Path = "/redoc");
 app.UseCors("AllowAngularOrigin");
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapHealthChecks("/health").WithTags("Health");
+app.MapHealthChecks("/health").WithTags("Health").AllowAnonymous();
 app.MapEndpoints();
 
-app.MapFallbackToFile("index.html");
+// The SPA and callback must load before sign-in; API data is protected separately.
+app.MapFallbackToFile("index.html").AllowAnonymous();
 
 await app.RunAsync();
 

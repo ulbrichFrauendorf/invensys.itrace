@@ -20,6 +20,12 @@ export interface TelemetryGroupRow {
   samples: number;
   latest: string;
   hint: string;
+  applicationName: string;
+  environment: string;
+  severity: string;
+  exceptionType: string;
+  route: string;
+  latestEvent: TelemetryRow;
   averageDuration?: string;
   p95Duration?: string;
 }
@@ -81,6 +87,14 @@ export function buildGroupRows(rows: TelemetryRow[]): TelemetryGroupRow[] {
         samples: items.length,
         latest: formatDateTime(latest.occurredAt),
         hint: latest.hint,
+        applicationName: latest.applicationName ?? 'Unknown application',
+        environment: latest.environment ?? 'Unknown environment',
+        severity: latest.severity ?? 'Error',
+        exceptionType: latest.exceptionType ?? 'Unclassified error',
+        route:
+          [latest.method, latest.route || latest.operation].filter(Boolean).join(' ') ||
+          'Not captured',
+        latestEvent: latest,
         averageDuration: average === undefined ? undefined : formatMilliseconds(average),
         p95Duration: p95 === undefined ? undefined : formatMilliseconds(p95),
       };

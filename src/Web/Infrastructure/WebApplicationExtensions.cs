@@ -7,6 +7,7 @@ public static class WebApplicationExtensions
     public static RouteGroupBuilder MapGroup(this WebApplication app, EndpointGroupBase group)
     {
         return app.MapGroup($"/api/{group.GroupName}")
+            .RequireAuthorization()
             .WithGroupName(group.GroupName)
             .WithTags(group.GroupName);
     }

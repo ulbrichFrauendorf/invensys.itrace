@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Invensys.ITrace.Infrastructure.Data;
 using Invensys.ITrace.Web.Swagger;
 using NSwag;
+using NSwag.Generation.Processors.Security;
 
 namespace Invensys.ITrace.Web;
 
@@ -26,6 +27,14 @@ public static class DependencyInjection
             };
 
             configure.OperationProcessors.Add(new TagByGroupOperationProcessor());
+            configure.AddSecurity("Bearer", [], new OpenApiSecurityScheme
+            {
+                Type = OpenApiSecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Description = "iServe access token for itrace.api",
+            });
+            configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
         });
 
         return services;

@@ -82,7 +82,8 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
         TelemetrySignal signal,
         Guid? applicationId,
         int? take,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        int? windowMinutes = null)
     {
         var safeTake = Math.Clamp(take ?? 100, 1, 500);
 
@@ -96,15 +97,28 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
             query = query.Where(record => record.ApplicationId == applicationId.Value);
         }
 
-        var items = await query
-            .OrderByDescending(record => record.OccurredAtUtc)
-            .Take(safeTake)
-            .ToListAsync(cancellationToken);
+        if (windowMinutes.HasValue)
+        {
+            var windowEnd = DateTime.UtcNow;
+
+            var windowStart = windowEnd.AddMinutes(-Math.Clamp(windowMinutes.Value, 1, 30 * 24 * 60));
+
+            query = query.Where(record => record.OccurredAtUtc >= windowStart && record.OccurredAtUtc <= windowEnd);
+        }
+
+        query = query.OrderByDescending(record => record.OccurredAtUtc);
+
+        if (!windowMinutes.HasValue)
+        {
+            query = query.Take(safeTake);
+        }
+
+        var items = await query.ToListAsync(cancellationToken);
 
         return new TelemetryListResponse(
             items.Select(ToDto).ToList(),
             items.Count,
-            safeTake);
+            windowMinutes.HasValue ? items.Count : safeTake);
     }
 
     private static MetricSummaryDto Summarize(IEnumerable<TelemetryRecord> records, TelemetrySignal signal)
@@ -151,6 +165,10 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
             record.AttributesJson,
             JsonOptions) ?? [];
 
+        string? Attribute(params string[] keys) => keys
+            .Select(key => attributes.GetValueOrDefault(key))
+            .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+
         return new TelemetryEventDto(
             record.Id,
             record.ApplicationId,
@@ -161,9 +179,9 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
             record.Severity,
             record.Message,
             record.Operation,
-            record.Route,
-            record.Method,
-            record.StatusCode,
+            record.Route ?? Attribute("http.route", "url.path", "http.target"),
+            record.Method ?? Attribute("http.request.method", "http.method"),
+            record.StatusCode ?? (int.TryParse(Attribute("http.response.status_code", "http.status_code"), out var status) ? status : null),
             record.DurationMs,
             record.Database,
             record.DbSystem,

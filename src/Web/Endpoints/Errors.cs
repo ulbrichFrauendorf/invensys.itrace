@@ -17,10 +17,11 @@ public sealed class Errors : EndpointGroupBase
     public static async Task<Ok<TelemetryListResponse>> ListErrors(
         Guid? applicationId,
         int? take,
+        int? windowMinutes,
         TelemetryQueryService queries,
         CancellationToken cancellationToken)
     {
-        var response = await queries.GetEventsAsync(TelemetrySignal.Error, applicationId, take, cancellationToken);
+        var response = await queries.GetEventsAsync(TelemetrySignal.Error, applicationId, take, cancellationToken, windowMinutes);
 
         return TypedResults.Ok(response);
     }

@@ -644,10 +644,12 @@ export interface IErrorsClient {
    * ListErrors
    * @param applicationId (optional)
    * @param take (optional)
+   * @param windowMinutes (optional)
    */
   listErrors(
     applicationId: string | null | undefined,
     take: number | null | undefined,
+    windowMinutes: number | null | undefined,
   ): Observable<TelemetryListResponse>;
 }
 
@@ -671,15 +673,19 @@ export class ErrorsClient implements IErrorsClient {
    * ListErrors
    * @param applicationId (optional)
    * @param take (optional)
+   * @param windowMinutes (optional)
    */
   listErrors(
     applicationId: string | null | undefined,
     take: number | null | undefined,
+    windowMinutes: number | null | undefined,
   ): Observable<TelemetryListResponse> {
     let url_ = this.baseUrl + '/api/errors?';
     if (applicationId !== undefined && applicationId !== null)
       url_ += 'applicationId=' + encodeURIComponent('' + applicationId) + '&';
     if (take !== undefined && take !== null) url_ += 'take=' + encodeURIComponent('' + take) + '&';
+    if (windowMinutes !== undefined && windowMinutes !== null)
+      url_ += 'windowMinutes=' + encodeURIComponent('' + windowMinutes) + '&';
     url_ = url_.replace(/[?&]$/, '');
 
     let options_: any = {

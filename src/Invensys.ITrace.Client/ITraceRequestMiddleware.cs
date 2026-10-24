@@ -26,7 +26,7 @@ internal sealed class ITraceRequestMiddleware(
                 await telemetryClient.TrackErrorAsync(
                     exception,
                     ResolveRoute(context),
-                    BuildRequestAttributes(context),
+                    BuildRequestAttributes(context, context.Response.StatusCode),
                     CancellationToken.None);
             }
         }
@@ -37,14 +37,14 @@ internal sealed class ITraceRequestMiddleware(
             await telemetryClient.TrackErrorAsync(
                 ex,
                 ResolveRoute(context),
-                BuildRequestAttributes(context),
+                BuildRequestAttributes(context, StatusCodes.Status500InternalServerError),
                 CancellationToken.None);
 
             throw;
         }
         finally
         {
-            var statusCode = exception is null
+            var statusCode = context.Features.Get<IExceptionHandlerFeature>() is not null || exception is null
                 ? context.Response.StatusCode
                 : StatusCodes.Status500InternalServerError;
 
@@ -53,7 +53,7 @@ internal sealed class ITraceRequestMiddleware(
                 ResolveRoute(context),
                 statusCode,
                 Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds,
-                BuildRequestAttributes(context),
+                BuildRequestAttributes(context, statusCode),
                 CancellationToken.None);
         }
     }
@@ -70,7 +70,7 @@ internal sealed class ITraceRequestMiddleware(
         return context.Request.Path.Value ?? "/";
     }
 
-    private static Dictionary<string, string?> BuildRequestAttributes(HttpContext context) => new()
+    private static Dictionary<string, string?> BuildRequestAttributes(HttpContext context, int statusCode) => new()
     {
         ["url.scheme"] = context.Request.Scheme,
         ["url.path"] = context.Request.Path.Value,
@@ -79,6 +79,7 @@ internal sealed class ITraceRequestMiddleware(
         ["server.port"] = context.Request.Host.Port?.ToString(),
         ["http.request.method"] = context.Request.Method,
         ["http.route"] = ResolveRoute(context),
+        ["http.response.status_code"] = statusCode.ToString(System.Globalization.CultureInfo.InvariantCulture),
         ["user_agent.original"] = context.Request.Headers.UserAgent.ToString(),
     };
 }

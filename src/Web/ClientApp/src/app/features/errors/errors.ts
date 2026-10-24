@@ -24,11 +24,9 @@ import { ApplicationContextService } from '../../core/application-context.servic
 import { ITraceApiService, TelemetryEventDto } from '../../core/itrace-api.service';
 import { formatDateTime } from '../../shared/application-selector';
 import {
-  buildGroupRows,
   buildTelemetryRows,
   buildVolumeChart,
   filterByTimeRange,
-  TelemetryGroupRow,
   TelemetryRow,
   telemetryTimeRanges,
   TimeRangeOption,
@@ -61,11 +59,6 @@ export class Errors {
   protected readonly events = signal<TelemetryEventDto[]>([]);
   protected readonly loading = signal(false);
   protected readonly loadError = signal<string | null>(null);
-  protected readonly viewOptions = [
-    { label: 'Grouped issues', value: 'groups' },
-    { label: 'Individual errors', value: 'events' },
-  ];
-  protected selectedView = this.viewOptions[0];
   protected readonly timeRangeOptions = telemetryTimeRanges;
   protected selectedTimeRange: TimeRangeOption = this.timeRangeOptions[2];
   private readonly timeRange = signal(this.selectedTimeRange);
@@ -78,63 +71,27 @@ export class Errors {
     buildVolumeChart('errors-volume', 'Errors', this.filteredEvents(), this.timeRange()),
   );
 
-  protected readonly rows = computed(() =>
-    buildTelemetryRows(
+  protected readonly rows = computed(() => {
+    const occurrences = new Map<string, TelemetryRow & { count: number }>();
+    for (const row of buildTelemetryRows(
       this.filteredEvents(),
       (event) => this.hint(event),
       (event) => this.groupKey(event),
-    ),
-  );
+    )) {
+      const previous = occurrences.get(row.groupKey);
+      const count = (previous?.count ?? 0) + 1;
+      const latest =
+        previous && Date.parse(previous.occurredAt!) > Date.parse(row.occurredAt!) ? previous : row;
+      occurrences.set(row.groupKey, { ...latest, count });
+    }
+    return [...occurrences.values()].sort(
+      (a, b) => Date.parse(b.occurredAt!) - Date.parse(a.occurredAt!),
+    );
+  });
 
-  protected readonly groupGrid = computed<GridData<TelemetryGroupRow, TelemetryRow>>(() => ({
+  protected readonly eventGrid = computed<GridData<TelemetryRow & { count: number }>>(() => ({
     columns: [
-      { field: 'exceptionType', header: 'Exception', sortable: true },
-      { field: 'hint', header: 'Latest message', sortable: true, width: '24rem' },
-      { field: 'applicationName', header: 'Application', sortable: true },
-      { field: 'environment', header: 'Environment', sortable: true },
-      { field: 'severity', header: 'Severity', sortable: true, severity: 'danger' },
-      { field: 'route', header: 'Request / operation', sortable: true },
-      { field: 'samples', header: 'Samples', type: 'number', sortable: true },
-      { field: 'latest', header: 'Latest', sortable: true },
-    ],
-    rows: buildGroupRows(this.rows()),
-    actions: [
-      {
-        id: 'latest-error',
-        icon: 'pi pi-eye',
-        label: 'Latest error',
-        tooltip: 'View the latest occurrence',
-        handler: (group) => this.showDetails(group.latestEvent),
-      },
-    ],
-    details: {
-      columns: [
-        { field: 'occurred', header: 'Occurred', sortable: true },
-        { field: 'severity', header: 'Severity', sortable: true },
-        { field: 'hint', header: 'Issue hint', sortable: true },
-        { field: 'applicationName', header: 'Application', sortable: true },
-        { field: 'environment', header: 'Environment', sortable: true },
-        { field: 'method', header: 'Method', sortable: true },
-        { field: 'route', header: 'Route', sortable: true },
-        { field: 'statusCode', header: 'HTTP status', type: 'number', sortable: true },
-        { field: 'traceId', header: 'Trace ID', sortable: true },
-      ],
-      rows: (group) => this.rows().filter((row) => row.groupKey === group.groupKey),
-      actions: [
-        {
-          id: 'view-details',
-          icon: 'pi pi-eye',
-          label: 'Details',
-          tooltip: 'View details',
-          handler: (event) => this.showDetails(event),
-        },
-      ],
-    },
-  }));
-
-  protected readonly eventGrid = computed<GridData<TelemetryRow>>(() => ({
-    columns: [
-      { field: 'occurred', header: 'Occurred', sortable: true },
+      { field: 'occurred', header: 'Last occurred', sortable: true },
       { field: 'severity', header: 'Severity', sortable: true, severity: 'danger' },
       { field: 'hint', header: 'Message', sortable: true, width: '24rem' },
       { field: 'exceptionType', header: 'Exception', sortable: true },
@@ -143,15 +100,15 @@ export class Errors {
       { field: 'method', header: 'Method', sortable: true },
       { field: 'route', header: 'Route', sortable: true },
       { field: 'statusCode', header: 'HTTP status', type: 'number', sortable: true },
-      { field: 'traceId', header: 'Trace ID', sortable: true },
+      { field: 'count', header: 'Count', type: 'number', sortable: true },
     ],
     rows: this.rows(),
     actions: [
       {
         id: 'view-error',
         icon: 'pi pi-eye',
-        label: 'Details',
-        tooltip: 'View full message and stack trace',
+        label: 'View latest',
+        tooltip: 'View the latest occurrence',
         handler: (row) => this.showDetails(row),
       },
     ],
@@ -159,16 +116,22 @@ export class Errors {
 
   constructor() {
     effect((onCleanup) => {
-      const subscription = this.load(this.applicationContext.selectedApplicationId());
+      const subscription = this.load(
+        this.applicationContext.selectedApplicationId(),
+        this.timeRange(),
+      );
       onCleanup(() => subscription.unsubscribe());
     });
   }
 
-  protected load(applicationId = this.applicationContext.selectedApplicationId()) {
+  protected load(
+    applicationId = this.applicationContext.selectedApplicationId(),
+    range = this.timeRange(),
+  ) {
     this.loading.set(true);
     this.loadError.set(null);
     return this.api
-      .getErrors(applicationId)
+      .getErrors(applicationId, range.value / 60_000)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (response) => this.events.set(response.items ?? []),
@@ -185,11 +148,13 @@ export class Errors {
   }
 
   private groupKey(event: TelemetryEventDto): string {
-    return (
-      [event.applicationId, event.environment, event.exceptionType, event.operation, event.route]
-        .filter(Boolean)
-        .join(' / ') || 'Unclassified error'
-    );
+    return JSON.stringify([
+      event.applicationId,
+      event.environment,
+      event.exceptionType,
+      event.message,
+      event.stackTrace,
+    ]);
   }
 
   private hint(event: TelemetryEventDto): string {

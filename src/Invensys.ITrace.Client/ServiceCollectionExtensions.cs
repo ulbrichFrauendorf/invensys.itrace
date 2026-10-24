@@ -54,6 +54,8 @@ public static class ServiceCollectionExtensions
             return new ITraceTelemetryQueue(options.QueueCapacity);
         });
 
+        services.AddHttpContextAccessor();
+
         services.AddSingleton<IITraceTelemetryClient, ITraceTelemetryClient>();
 
         services.AddSingleton<ITraceDbCommandInterceptor>();

@@ -34,10 +34,14 @@ public sealed class ITraceRequestMiddlewareTests
         Assert.Single(telemetryClient.Errors);
 
         Assert.False(telemetryClient.Errors[0].CancellationToken.IsCancellationRequested);
+
+        Assert.Equal("500", telemetryClient.Errors[0].Attributes?["http.response.status_code"]);
     }
 
-    [Fact]
-    public async Task InvokeAsync_TracksExceptionHandlerFeature_WhenExceptionWasHandledDownstream()
+    [Theory]
+    [InlineData(StatusCodes.Status500InternalServerError)]
+    [InlineData(StatusCodes.Status422UnprocessableEntity)]
+    public async Task InvokeAsync_TracksExceptionHandlerFeature_WhenExceptionWasHandledDownstream(int statusCode)
     {
         var telemetryClient = new CapturingTelemetryClient();
 
@@ -53,7 +57,7 @@ public sealed class ITraceRequestMiddlewareTests
                 Path = "/api/test",
             });
 
-            ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            ctx.Response.StatusCode = statusCode;
 
             return Task.CompletedTask;
         }, telemetryClient);
@@ -64,7 +68,9 @@ public sealed class ITraceRequestMiddlewareTests
 
         Assert.Same(exception, telemetryClient.Errors[0].Exception);
 
-        Assert.Equal(StatusCodes.Status500InternalServerError, telemetryClient.RequestDurations[0].StatusCode);
+        Assert.Equal(statusCode, telemetryClient.RequestDurations[0].StatusCode);
+
+        Assert.Equal(statusCode.ToString(), telemetryClient.Errors[0].Attributes?["http.response.status_code"]);
     }
 
     [Fact]

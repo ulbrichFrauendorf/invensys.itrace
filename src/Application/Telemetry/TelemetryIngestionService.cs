@@ -39,6 +39,10 @@ public sealed class TelemetryIngestionService(
             ? DateTime.UtcNow
             : envelope.OccurredAt.UtcDateTime;
 
+        string? Attribute(params string[] keys) => keys
+            .Select(key => envelope.Attributes?.GetValueOrDefault(key))
+            .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+
         var record = new TelemetryRecord
         {
             Id = Guid.NewGuid(),
@@ -48,9 +52,10 @@ public sealed class TelemetryIngestionService(
             Severity = Limit(FirstNonBlank(envelope.Severity, envelope.Signal == TelemetrySignal.Error ? "Error" : "Information"), 40) ?? "Information",
             Message = Limit(envelope.Message, 4000),
             Operation = Limit(envelope.Operation, 512),
-            Route = Limit(envelope.Route, 512),
-            Method = Limit(envelope.Method, 20),
-            StatusCode = envelope.StatusCode,
+            Route = Limit(FirstNonBlank(envelope.Route, Attribute("http.route", "url.path", "http.target")), 512),
+            Method = Limit(FirstNonBlank(envelope.Method, Attribute("http.request.method", "http.method")), 20),
+            StatusCode = envelope.StatusCode
+                ?? (int.TryParse(Attribute("http.response.status_code", "http.status_code"), out var status) ? status : null),
             DurationMs = envelope.DurationMs,
             Database = Limit(envelope.Database, 256),
             DbSystem = Limit(envelope.DbSystem, 80),
@@ -74,7 +79,7 @@ public sealed class TelemetryIngestionService(
         return IngestionResult.Accept();
     }
 
-    private static string FirstNonBlank(string? value, string fallback) =>
+    private static string? FirstNonBlank(string? value, string? fallback) =>
         string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
 
     private static string? Limit(string? value, int maxLength)

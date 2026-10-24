@@ -60,8 +60,11 @@ export class ITraceApiService {
     return this.dashboard.getDashboard(applicationId, windowMinutes);
   }
 
-  getErrors(applicationId?: string | null): Observable<TelemetryListResponse> {
-    return this.errors.listErrors(applicationId, 200);
+  getErrors(
+    applicationId?: string | null,
+    windowMinutes?: number,
+  ): Observable<TelemetryListResponse> {
+    return this.errors.listErrors(applicationId, undefined, windowMinutes);
   }
 
   getRequestDurations(applicationId?: string | null): Observable<TelemetryListResponse> {

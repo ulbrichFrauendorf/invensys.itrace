@@ -1,5 +1,8 @@
 using System.Diagnostics;
+using System.Globalization;
 using Invensys.ITrace.Contracts;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 
 namespace Invensys.ITrace.Client;
@@ -32,7 +35,8 @@ public interface IITraceTelemetryClient
 
 internal sealed class ITraceTelemetryClient(
     ITraceTelemetryQueue queue,
-    IOptionsMonitor<ITraceOptions> options) : IITraceTelemetryClient
+    IOptionsMonitor<ITraceOptions> options,
+    IHttpContextAccessor? httpContextAccessor = null) : IITraceTelemetryClient
 {
     public ValueTask TrackErrorAsync(
         Exception exception,
@@ -47,6 +51,49 @@ internal sealed class ITraceTelemetryClient(
             return ValueTask.CompletedTask;
         }
 
+        var context = httpContextAccessor?.HttpContext;
+
+        string? Resolve(params string[] keys)
+        {
+            foreach (var key in keys)
+            {
+                if (attributes?.TryGetValue(key, out var value) == true && !string.IsNullOrWhiteSpace(value))
+                {
+                    return value;
+                }
+
+                for (var current = Activity.Current; current is not null; current = current.Parent)
+                {
+                    var tag = Convert.ToString(current.GetTagItem(key), CultureInfo.InvariantCulture);
+
+                    if (!string.IsNullOrWhiteSpace(tag))
+                    {
+                        return tag;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        var method = Resolve("http.request.method", "http.method") ?? context?.Request.Method;
+
+        var route = Resolve("http.route")
+            ?? (context?.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText
+            ?? Resolve("url.path", "http.target")
+            ?? context?.Request.Path.Value;
+
+        var statusCode = int.TryParse(Resolve("http.response.status_code", "http.status_code"), out var status)
+            ? status
+            : (int?)null;
+
+        if (!statusCode.HasValue && context is not null)
+        {
+            statusCode = context.Response.StatusCode >= 400
+                ? context.Response.StatusCode
+                : StatusCodes.Status500InternalServerError;
+        }
+
         using var activityScope = StartOrEnrichActivity("itrace.error", ActivityKind.Internal);
 
         var activity = activityScope.Activity;
@@ -57,6 +104,12 @@ internal sealed class ITraceTelemetryClient(
 
         ApplyAttributes(activity, attributes);
 
+        activity?.SetTag("http.request.method", method);
+
+        activity?.SetTag("http.route", route);
+
+        activity?.SetTag("http.response.status_code", statusCode);
+
         return EnqueueAsync(new TelemetryEnvelope(
             currentOptions.Dsn,
             TelemetrySignal.Error,
@@ -66,9 +119,9 @@ internal sealed class ITraceTelemetryClient(
             "Error",
             exception.Message,
             operation,
-            null,
-            null,
-            null,
+            route,
+            method,
+            statusCode,
             null,
             null,
             null,

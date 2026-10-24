@@ -1,6 +1,5 @@
 <i-page-layout headerText="Error log" eyebrowText="Errors">
   <div iPageHeaderActions class="page-actions">
-    <i-select label="View" [options]="viewOptions" optionLabel="label" [(ngModel)]="selectedView" />
     <i-select
       label="Time range"
       [options]="timeRangeOptions"
@@ -19,9 +18,8 @@
       <p role="alert">{{ loadError() }}</p>
     }
     <p class="results-summary">
-      {{ filteredEvents().length }} errors in this time range, from the most recent 200 entries for
-      the selected application. Expand a grouped issue to compare occurrences, or open Details to
-      inspect the full error.
+      {{ filteredEvents().length }} errors in this time range, shown as {{ rows().length }}
+      distinct exceptions. View latest to inspect the most recent occurrence of each exception.
     </p>
     @if (filteredEvents().length > 0) {
       <i-card title="Error volume">
@@ -31,24 +29,13 @@
       <p class="empty-state">No errors in this time range</p>
     }
 
-    @if (selectedView.value === 'groups') {
-      <i-table
-        [grid]="groupGrid()"
-        [sortable]="true"
-        [globalFilter]="true"
-        [striped]="true"
-        dataKey="groupKey"
-        height="42rem"
-      />
-    } @else {
-      <i-table
-        [grid]="eventGrid()"
-        [sortable]="true"
-        [globalFilter]="true"
-        [striped]="true"
-        dataKey="id"
-        height="42rem"
-      />
-    }
+    <i-table
+      [grid]="eventGrid()"
+      [sortable]="true"
+      [globalFilter]="true"
+      [striped]="true"
+      dataKey="groupKey"
+      height="42rem"
+    />
   </div>
 </i-page-layout>

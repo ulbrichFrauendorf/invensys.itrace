@@ -94,7 +94,6 @@ export class Errors {
       { field: 'occurred', header: 'Last occurred', sortable: true },
       { field: 'severity', header: 'Severity', sortable: true, severity: 'danger' },
       { field: 'hint', header: 'Message', sortable: true, width: '24rem' },
-      { field: 'exceptionType', header: 'Exception', sortable: true },
       { field: 'applicationName', header: 'Application', sortable: true },
       { field: 'environment', header: 'Environment', sortable: true },
       { field: 'method', header: 'Method', sortable: true },

@@ -12,7 +12,7 @@ export interface TelemetryDetailsDialogData {
   message?: string;
   stackTrace?: string;
   attributes?: TelemetryDetailRow[];
-  stackTraceOnly?: boolean;
+  copyAndClose?: boolean;
 }
 
 @Component({
@@ -20,19 +20,12 @@ export interface TelemetryDetailsDialogData {
   imports: [CommonModule, IButton, ICard],
   template: `
     <div class="error-details">
-      @if (data.stackTraceOnly) {
-        <pre class="stack-trace">{{ data.stackTrace }}</pre>
-        <div class="dialog-actions">
-          <i-button icon="pi pi-info-circle" severity="info" (clicked)="copyAndClose()"
-            >Copy and close</i-button
-          >
-        </div>
-      } @else {
-        @if (data.message) {
-          <i-card title="Error message">
-            <p class="message">{{ data.message }}</p>
-          </i-card>
-        }
+      @if (data.message) {
+        <i-card title="Error message">
+          <p class="message">{{ data.message }}</p>
+        </i-card>
+      }
+      @if (data.details.length) {
         <i-card title="Event context">
           <dl class="telemetry-details">
             @for (detail of data.details; track detail.label) {
@@ -43,25 +36,32 @@ export interface TelemetryDetailsDialogData {
             }
           </dl>
         </i-card>
-        @if (data.stackTrace) {
-          <i-card title="Stack trace">
-            <pre class="stack-trace" tabindex="0" aria-label="Full stack trace">{{
-              data.stackTrace
-            }}</pre>
-          </i-card>
-        }
-        @if (data.attributes?.length) {
-          <i-card title="Additional context">
-            <dl class="telemetry-details">
-              @for (attribute of data.attributes; track attribute.label) {
-                <div>
-                  <dt>{{ attribute.label }}</dt>
-                  <dd>{{ attribute.value }}</dd>
-                </div>
-              }
-            </dl>
-          </i-card>
-        }
+      }
+      @if (data.stackTrace) {
+        <i-card title="Stack trace">
+          <pre class="stack-trace" tabindex="0" aria-label="Full stack trace">{{
+            data.stackTrace
+          }}</pre>
+        </i-card>
+      }
+      @if (data.attributes?.length) {
+        <i-card title="Additional context">
+          <dl class="telemetry-details">
+            @for (attribute of data.attributes; track attribute.label) {
+              <div>
+                <dt>{{ attribute.label }}</dt>
+                <dd>{{ attribute.value }}</dd>
+              </div>
+            }
+          </dl>
+        </i-card>
+      }
+      @if (data.copyAndClose) {
+        <div class="dialog-actions">
+          <i-button icon="pi pi-info-circle" severity="info" (clicked)="copyAndCloseStackTrace()">
+            Copy and close
+          </i-button>
+        </div>
       }
     </div>
   `,
@@ -131,7 +131,7 @@ export class TelemetryDetailsDialogComponent {
   data: TelemetryDetailsDialogData = { details: [] };
   dialogRef?: IDynamicDialogRef;
 
-  protected async copyAndClose(): Promise<void> {
+  protected async copyAndCloseStackTrace(): Promise<void> {
     try {
       await navigator.clipboard.writeText(this.data.stackTrace ?? '');
       this.dialogRef?.close();

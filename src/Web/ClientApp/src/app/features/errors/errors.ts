@@ -24,6 +24,7 @@ import {
 } from 'invensys-ng';
 import { ApplicationContextService } from '../../core/application-context.service';
 import { ITraceApiService, TelemetryEventDto } from '../../core/itrace-api.service';
+import { formatDateTime } from '../../shared/application-selector';
 import {
   buildTelemetryRows,
   buildVolumeChart,
@@ -208,9 +209,30 @@ export class Errors {
       dismissableMask: true,
       contentStyle: { 'max-height': '70vh', overflow: 'auto' },
       data: {
+        message: event.message || 'No message was captured for this error.',
+        details: this.detailRows([
+          ['Event ID', event.id],
+          ['Occurred', formatDateTime(event.occurredAt)],
+          ['Severity', event.severity],
+          ['Application', event.applicationName],
+          ['Environment', event.environment],
+          ['Exception', event.exceptionType],
+          ['Operation', event.operation],
+          ['Route', event.route],
+          ['Method', event.method],
+          ['Status', event.statusCode],
+          ['Trace', event.traceId],
+          ['Span', event.spanId],
+        ]),
         stackTrace: event.stackTrace || 'No stack trace was captured for this error.',
-        stackTraceOnly: true,
+        copyAndClose: true,
       },
     });
+  }
+
+  private detailRows(rows: Array<[string, string | number | null | undefined]>) {
+    return rows
+      .filter(([, value]) => value !== null && value !== undefined && value !== '')
+      .map(([label, value]) => ({ label, value: String(value) }));
   }
 }

@@ -13,16 +13,23 @@
     flex-wrap: wrap;
     gap: 0.75rem;
   }
-  .results-summary {
-    margin: 0;
-    color: var(--color-text-secondary);
-    line-height: 1.6;
+}
+
+.trace-lookup {
+  display: flex;
+  align-items: end;
+  gap: 0.75rem;
+  max-width: 42rem;
+
+  i-input-text {
+    flex: 1;
+    min-width: 0;
   }
-  .empty-state {
-    color: var(--text-color-secondary, #64748b);
-    display: grid;
-    margin: 0;
-    min-height: 8rem;
-    place-items: center;
+}
+
+@media (max-width: 640px) {
+  .trace-lookup {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

@@ -157,7 +157,6 @@ export class RequestDurations {
       header: 'Request entry details',
       width: '42rem',
       dismissableMask: true,
-      breakpoints: { '960px': { width: '90vw' }, '640px': { width: '96vw' } },
       contentStyle: { 'max-height': '70vh', overflow: 'auto' },
       data: {
         details: this.detailRows([

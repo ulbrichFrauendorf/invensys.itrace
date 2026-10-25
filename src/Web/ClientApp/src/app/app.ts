@@ -7,6 +7,7 @@ import {
   IButton,
   ISelect,
   ITag,
+  IWhisper,
   LayoutComponent,
   LayoutConfig,
   MenuModel,
@@ -60,5 +61,9 @@ export class AppShell {
   ]);
 }
 
-@Component({ selector: 'app-root', imports: [RouterOutlet], template: '<router-outlet />' })
+@Component({
+  selector: 'app-root',
+  imports: [RouterOutlet, IWhisper],
+  template: '<i-whisper /><router-outlet />',
+})
 export class App {}

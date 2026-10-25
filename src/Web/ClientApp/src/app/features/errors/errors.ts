@@ -16,13 +16,14 @@ import {
   IButton,
   ICard,
   IChart,
+  IInputText,
   ISelect,
   ITable,
   TooltipDirective,
+  WhisperService,
 } from 'invensys-ng';
 import { ApplicationContextService } from '../../core/application-context.service';
 import { ITraceApiService, TelemetryEventDto } from '../../core/itrace-api.service';
-import { formatDateTime } from '../../shared/application-selector';
 import {
   buildTelemetryRows,
   buildVolumeChart,
@@ -43,6 +44,7 @@ import { TelemetryDetailsDialogComponent } from '../../shared/telemetry-details-
     IButton,
     ICard,
     IChart,
+    IInputText,
     ISelect,
     ITable,
     TooltipDirective,
@@ -55,10 +57,13 @@ export class Errors {
   private readonly api = inject(ITraceApiService);
   private readonly applicationContext = inject(ApplicationContextService);
   private readonly dialogService = inject(DialogService);
+  private readonly whisperService = inject(WhisperService);
 
   protected readonly events = signal<TelemetryEventDto[]>([]);
   protected readonly loading = signal(false);
   protected readonly loadError = signal<string | null>(null);
+  protected traceIdLookup = '';
+  protected readonly traceLookupLoading = signal(false);
   protected readonly timeRangeOptions = telemetryTimeRanges;
   protected selectedTimeRange: TimeRangeOption = this.timeRangeOptions[2];
   private readonly timeRange = signal(this.selectedTimeRange);
@@ -134,10 +139,39 @@ export class Errors {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (response) => this.events.set(response.items ?? []),
+        error: () => {
+          const detail =
+            'Unable to load errors. Check your connection and iServe access, then refresh.';
+          this.loadError.set(detail);
+          this.whisperService.add({ severity: 'warning', summary: 'Error log', detail });
+        },
+      });
+  }
+
+  protected lookupTraceId(): void {
+    const traceId = this.traceIdLookup.trim();
+
+    if (!traceId) {
+      this.whisperService.add({
+        severity: 'warning',
+        summary: 'Trace lookup',
+        detail: 'Enter a trace ID to search.',
+      });
+      return;
+    }
+
+    this.traceLookupLoading.set(true);
+    this.api
+      .lookupErrorByTraceId(traceId, this.applicationContext.selectedApplicationId())
+      .pipe(finalize(() => this.traceLookupLoading.set(false)))
+      .subscribe({
+        next: (event) => this.showDetails(event),
         error: () =>
-          this.loadError.set(
-            'Unable to load errors. Check your connection and iServe access, then refresh.',
-          ),
+          this.whisperService.add({
+            severity: 'warning',
+            summary: 'Trace lookup',
+            detail: 'No error was found for that trace ID, or the lookup could not be completed.',
+          }),
       });
   }
 
@@ -172,36 +206,11 @@ export class Errors {
       header: 'Error entry details',
       width: 'min(70rem, 94vw)',
       dismissableMask: true,
-      breakpoints: { '960px': { width: '90vw' }, '640px': { width: '96vw' } },
       contentStyle: { 'max-height': '70vh', overflow: 'auto' },
       data: {
-        message: event.message || 'No message was captured for this error.',
         stackTrace: event.stackTrace || 'No stack trace was captured for this error.',
-        attributes: Object.entries(event.attributes ?? {}).map(([label, value]) => ({
-          label,
-          value: value ?? 'Not captured',
-        })),
-        details: this.detailRows([
-          ['Event ID', event.id],
-          ['Occurred', formatDateTime(event.occurredAt)],
-          ['Severity', event.severity],
-          ['Application', event.applicationName],
-          ['Environment', event.environment],
-          ['Exception', event.exceptionType],
-          ['Operation', event.operation],
-          ['Route', event.route],
-          ['Method', event.method],
-          ['Status', event.statusCode],
-          ['Trace', event.traceId],
-          ['Span', event.spanId],
-        ]),
+        stackTraceOnly: true,
       },
     });
-  }
-
-  private detailRows(rows: Array<[string, string | number | null | undefined]>) {
-    return rows
-      .filter(([, value]) => value !== null && value !== undefined && value !== '')
-      .map(([label, value]) => ({ label, value: String(value) }));
   }
 }

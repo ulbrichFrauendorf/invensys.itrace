@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
-import { IButton, ICard } from 'invensys-ng';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { IDynamicDialogRef, IButton, ICard } from 'invensys-ng';
 
 export interface TelemetryDetailRow {
   label: string;
@@ -12,6 +12,7 @@ export interface TelemetryDetailsDialogData {
   message?: string;
   stackTrace?: string;
   attributes?: TelemetryDetailRow[];
+  stackTraceOnly?: boolean;
 }
 
 @Component({
@@ -19,56 +20,49 @@ export interface TelemetryDetailsDialogData {
   imports: [CommonModule, IButton, ICard],
   template: `
     <div class="error-details">
-      @if (data.message) {
-        <i-card title="Error message">
-          <i-button icon="pi pi-copy" severity="secondary" (clicked)="copy(data.message)"
-            >Copy message</i-button
+      @if (data.stackTraceOnly) {
+        <pre class="stack-trace">{{ data.stackTrace }}</pre>
+        <div class="dialog-actions">
+          <i-button icon="pi pi-info-circle" severity="info" (clicked)="copyAndClose()"
+            >Copy and close</i-button
           >
-          <p class="message">{{ data.message }}</p>
-        </i-card>
-      }
-      <i-card title="Event context">
-        <dl class="telemetry-details">
-          @for (detail of data.details; track detail.label) {
-            <div>
-              <dt>{{ detail.label }}</dt>
-              <dd>{{ detail.value }}</dd>
-            </div>
-          }
-        </dl>
-      </i-card>
-      @if (data.stackTrace) {
-        <i-card title="Stack trace">
-          <div class="stack-actions">
-            <i-button icon="pi pi-copy" severity="secondary" (clicked)="copy(data.stackTrace)"
-              >Copy stack trace</i-button
-            >
-            <i-button severity="secondary" (clicked)="wrapStack.set(!wrapStack())">{{
-              wrapStack() ? 'Show original lines' : 'Wrap long lines'
-            }}</i-button>
-          </div>
-          <pre
-            class="stack-trace"
-            [class.wrap]="wrapStack()"
-            tabindex="0"
-            aria-label="Full stack trace"
-            >{{ data.stackTrace }}</pre
-          >
-        </i-card>
-      }
-      @if (data.attributes?.length) {
-        <i-card title="Additional context">
+        </div>
+      } @else {
+        @if (data.message) {
+          <i-card title="Error message">
+            <p class="message">{{ data.message }}</p>
+          </i-card>
+        }
+        <i-card title="Event context">
           <dl class="telemetry-details">
-            @for (attribute of data.attributes; track attribute.label) {
+            @for (detail of data.details; track detail.label) {
               <div>
-                <dt>{{ attribute.label }}</dt>
-                <dd>{{ attribute.value }}</dd>
+                <dt>{{ detail.label }}</dt>
+                <dd>{{ detail.value }}</dd>
               </div>
             }
           </dl>
         </i-card>
+        @if (data.stackTrace) {
+          <i-card title="Stack trace">
+            <pre class="stack-trace" tabindex="0" aria-label="Full stack trace">{{
+              data.stackTrace
+            }}</pre>
+          </i-card>
+        }
+        @if (data.attributes?.length) {
+          <i-card title="Additional context">
+            <dl class="telemetry-details">
+              @for (attribute of data.attributes; track attribute.label) {
+                <div>
+                  <dt>{{ attribute.label }}</dt>
+                  <dd>{{ attribute.value }}</dd>
+                </div>
+              }
+            </dl>
+          </i-card>
+        }
       }
-      <p role="status" aria-live="polite">{{ copyStatus() }}</p>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -78,32 +72,32 @@ export interface TelemetryDetailsDialogData {
         display: grid;
         gap: 1rem;
         min-width: 0;
+        .dialog-actions {
+          display: flex;
+          justify-content: flex-end;
+          border-top: 1px solid var(--surface-border);
+          padding-top: 1rem;
+        }
         .message {
           white-space: pre-wrap;
           overflow-wrap: anywhere;
           line-height: 1.6;
         }
-        .stack-actions {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
-        }
         .stack-trace {
+          margin: 0;
           padding: 1rem;
           border-radius: 0.5rem;
           background: var(--surface-ground);
           border: 1px solid var(--surface-border);
           overflow: auto;
-          max-height: 28rem;
+          max-height: 60vh;
+          white-space: pre-wrap;
+          overflow-wrap: anywhere;
           font:
             0.85rem/1.7 ui-monospace,
             Consolas,
             monospace;
           tab-size: 4;
-          &.wrap {
-            white-space: pre-wrap;
-            overflow-wrap: anywhere;
-          }
         }
         .telemetry-details {
           display: grid;
@@ -135,15 +129,25 @@ export interface TelemetryDetailsDialogData {
 })
 export class TelemetryDetailsDialogComponent {
   data: TelemetryDetailsDialogData = { details: [] };
-  protected readonly wrapStack = signal(true);
-  protected readonly copyStatus = signal('');
+  dialogRef?: IDynamicDialogRef;
 
-  protected async copy(value: string): Promise<void> {
+  protected async copyAndClose(): Promise<void> {
     try {
-      await navigator.clipboard.writeText(value);
-      this.copyStatus.set('Copied to clipboard.');
+      await navigator.clipboard.writeText(this.data.stackTrace ?? '');
+      this.dialogRef?.close();
     } catch {
-      this.copyStatus.set('Copy unavailable. Select the text and copy it manually.');
+      const textArea = document.createElement('textarea');
+      textArea.value = this.data.stackTrace ?? '';
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      const copied = document.execCommand('copy');
+      textArea.remove();
+
+      if (copied) {
+        this.dialogRef?.close();
+      }
     }
   }
 }

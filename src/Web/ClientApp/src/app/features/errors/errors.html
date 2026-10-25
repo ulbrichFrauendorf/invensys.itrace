@@ -11,26 +11,34 @@
     <i-button icon="pi pi-refresh" severity="secondary" iTooltip="Refresh" (clicked)="load()" />
   </div>
   <div class="page-sections">
-    @if (loading()) {
-      <p role="status">Loading errors…</p>
-    }
-    @if (loadError()) {
-      <p role="alert">{{ loadError() }}</p>
-    }
-    <p class="results-summary">
-      {{ filteredEvents().length }} errors in this time range, shown as {{ rows().length }}
-      distinct exceptions. View latest to inspect the most recent occurrence of each exception.
-    </p>
+    <div class="trace-lookup">
+      <i-input-text
+        label="Trace ID"
+        placeholder="Enter a trace ID"
+        [fluid]="true"
+        [(ngModel)]="traceIdLookup"
+        (keydown.enter)="lookupTraceId()"
+      />
+      <i-button
+        icon="pi pi-search"
+        [loading]="traceLookupLoading()"
+        [disabled]="traceLookupLoading()"
+        (clicked)="lookupTraceId()"
+        size="large"
+        >Look up</i-button
+      >
+    </div>
     @if (filteredEvents().length > 0) {
       <i-card title="Error volume">
         <i-chart [charts]="chart()" height="20rem" />
       </i-card>
-    } @else if (!loading() && !loadError()) {
-      <p class="empty-state">No errors in this time range</p>
     }
 
     <i-table
+      [showBorder]="true"
       [grid]="eventGrid()"
+      [loading]="loading()"
+      [emptyMessage]="loadError() ? 'Unable to load errors' : 'No errors in this time range'"
       [sortable]="true"
       [globalFilter]="true"
       [striped]="true"

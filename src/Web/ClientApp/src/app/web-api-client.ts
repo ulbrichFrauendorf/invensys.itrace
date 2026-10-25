@@ -651,6 +651,14 @@ export interface IErrorsClient {
     take: number | null | undefined,
     windowMinutes: number | null | undefined,
   ): Observable<TelemetryListResponse>;
+  /**
+   * GetByTraceId
+   * @param applicationId (optional)
+   */
+  getByTraceId(
+    traceId: string,
+    applicationId: string | null | undefined,
+  ): Observable<TelemetryEventDto>;
 }
 
 @Injectable({
@@ -740,6 +748,97 @@ export class ErrorsClient implements IErrorsClient {
               ? null
               : (JSON.parse(_responseText, this.jsonParseReviver) as TelemetryListResponse);
           return _observableOf(result200);
+        }),
+      );
+    } else if (status !== 200 && status !== 204) {
+      return blobToText(responseBlob).pipe(
+        _observableMergeMap((_responseText: string) => {
+          return throwException(
+            'An unexpected server error occurred.',
+            status,
+            _responseText,
+            _headers,
+          );
+        }),
+      );
+    }
+    return _observableOf(null as any);
+  }
+
+  /**
+   * GetByTraceId
+   * @param applicationId (optional)
+   */
+  getByTraceId(
+    traceId: string,
+    applicationId: string | null | undefined,
+  ): Observable<TelemetryEventDto> {
+    let url_ = this.baseUrl + '/api/errors/by-trace/{traceId}?';
+    if (traceId === undefined || traceId === null)
+      throw new globalThis.Error("The parameter 'traceId' must be defined.");
+    url_ = url_.replace('{traceId}', encodeURIComponent('' + traceId));
+    if (applicationId !== undefined && applicationId !== null)
+      url_ += 'applicationId=' + encodeURIComponent('' + applicationId) + '&';
+    url_ = url_.replace(/[?&]$/, '');
+
+    let options_: any = {
+      observe: 'response',
+      responseType: 'blob',
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+      }),
+    };
+
+    return this.http
+      .request('get', url_, options_)
+      .pipe(
+        _observableMergeMap((response_: any) => {
+          return this.processGetByTraceId(response_);
+        }),
+      )
+      .pipe(
+        _observableCatch((response_: any) => {
+          if (response_ instanceof HttpResponseBase) {
+            try {
+              return this.processGetByTraceId(response_ as any);
+            } catch (e) {
+              return _observableThrow(e) as any as Observable<TelemetryEventDto>;
+            }
+          } else return _observableThrow(response_) as any as Observable<TelemetryEventDto>;
+        }),
+      );
+  }
+
+  protected processGetByTraceId(response: HttpResponseBase): Observable<TelemetryEventDto> {
+    const status = response.status;
+    const responseBlob =
+      response instanceof HttpResponse
+        ? response.body
+        : (response as any).error instanceof Blob
+          ? (response as any).error
+          : undefined;
+
+    let _headers: any = {};
+    if (response.headers) {
+      for (let key of response.headers.keys()) {
+        _headers[key] = response.headers.get(key);
+      }
+    }
+    if (status === 200) {
+      return blobToText(responseBlob).pipe(
+        _observableMergeMap((_responseText: string) => {
+          let result200: any = null;
+          result200 =
+            _responseText === ''
+              ? null
+              : (JSON.parse(_responseText, this.jsonParseReviver) as TelemetryEventDto);
+          return _observableOf(result200);
+        }),
+      );
+    } else if (status === 404) {
+      return blobToText(responseBlob).pipe(
+        _observableMergeMap((_responseText: string) => {
+          return throwException('A server side error occurred.', status, _responseText, _headers);
         }),
       );
     } else if (status !== 200 && status !== 204) {

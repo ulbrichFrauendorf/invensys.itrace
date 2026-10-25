@@ -121,6 +121,28 @@ public sealed class TelemetryQueryService(IApplicationDbContext db)
             windowMinutes.HasValue ? items.Count : safeTake);
     }
 
+    public async Task<TelemetryEventDto?> GetErrorByTraceIdAsync(
+        string traceId,
+        Guid? applicationId,
+        CancellationToken cancellationToken = default)
+    {
+        var query = db.TelemetryRecords
+            .AsNoTracking()
+            .Include(record => record.Application)
+            .Where(record => record.Signal == TelemetrySignal.Error && record.TraceId == traceId);
+
+        if (applicationId.HasValue)
+        {
+            query = query.Where(record => record.ApplicationId == applicationId.Value);
+        }
+
+        var record = await query
+            .OrderByDescending(record => record.OccurredAtUtc)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return record is null ? null : ToDto(record);
+    }
+
     private static MetricSummaryDto Summarize(IEnumerable<TelemetryRecord> records, TelemetrySignal signal)
     {
         var durations = records

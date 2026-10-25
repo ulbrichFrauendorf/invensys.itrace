@@ -11,7 +11,9 @@ public sealed class Errors : EndpointGroupBase
 
     public override void Map(WebApplication app)
     {
-        app.MapGroup(this).MapGet(ListErrors);
+        app.MapGroup(this)
+            .MapGet(ListErrors)
+            .MapGet(GetByTraceId, "by-trace/{traceId}");
     }
 
     public static async Task<Ok<TelemetryListResponse>> ListErrors(
@@ -25,4 +27,16 @@ public sealed class Errors : EndpointGroupBase
 
         return TypedResults.Ok(response);
     }
+
+    public static async Task<Results<Ok<TelemetryEventDto>, NotFound>> GetByTraceId(
+        string traceId,
+        Guid? applicationId,
+        TelemetryQueryService queries,
+        CancellationToken cancellationToken)
+    {
+        var error = await queries.GetErrorByTraceIdAsync(traceId, applicationId, cancellationToken);
+
+        return error is null ? TypedResults.NotFound() : TypedResults.Ok(error);
+    }
+
 }

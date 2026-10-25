@@ -67,6 +67,13 @@ export class ITraceApiService {
     return this.errors.listErrors(applicationId, undefined, windowMinutes);
   }
 
+  lookupErrorByTraceId(
+    traceId: string,
+    applicationId?: string | null,
+  ): Observable<TelemetryEventDto> {
+    return this.errors.getByTraceId(traceId, applicationId);
+  }
+
   getRequestDurations(applicationId?: string | null): Observable<TelemetryListResponse> {
     return this.requestDurations.listRequestDurations(applicationId, 200);
   }

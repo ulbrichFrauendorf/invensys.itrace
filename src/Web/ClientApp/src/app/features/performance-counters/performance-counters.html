@@ -69,12 +69,13 @@
       </section>
 
       @if ((model.containers ?? []).length > 0) {
-        <i-table [grid]="containerGrid()" [sortable]="true" [striped]="true" />
+        <i-table [showBorder]="true" [grid]="containerGrid()" [sortable]="true" [striped]="true" />
       } @else {
         <i-no-content icon="pi pi-box" message="No Docker container counters available" />
       }
 
       <i-table
+        [showBorder]="true"
         [grid]="summaryGrid()"
         [sortable]="true"
         [globalFilter]="true"

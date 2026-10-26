@@ -27,7 +27,7 @@
     "@angular/router": "22.2.3",
     "angular-auth-oidc-client": "22.0.2",
     "chart.js": "^4.0.0",
-    "invensys-ng": "^22.2.4",
+    "invensys-ng": "22.2.5",
     "primeicons": "^7.0.0",
     "run-script-os": "^1.1.6",
     "rxjs": "~7.8.2",

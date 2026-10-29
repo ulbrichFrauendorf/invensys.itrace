@@ -1,12 +1,12 @@
 import { afterNextRender, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
-import { DialogService, IButton, TooltipDirective } from 'invensys-ng';
+import { DialogService, IDialogActions } from 'invensys-ng';
 import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-access-denied-dialog',
-  imports: [IButton, TooltipDirective],
+  imports: [IDialogActions],
   template: `
     <section class="access-denied" aria-label="Access information">
       <div class="access-summary">
@@ -38,24 +38,16 @@ import { finalize } from 'rxjs';
       @if (actionError()) {
         <p class="action-error" role="alert">{{ actionError() }}</p>
       }
-
-      <div class="access-actions">
-        <i-button
-          icon="pi pi-sign-out"
-          severity="contrast"
-          size="medium"
-          [text]="true"
-          ariaLabel="Sign out"
-          iTooltip="Sign out"
-          tooltipPosition="below"
-          [disabled]="busy()"
-          (clicked)="signOut()"
-        />
-        <i-button icon="pi pi-sign-in" [disabled]="busy()" (clicked)="signIn()">
-          Sign in again
-        </i-button>
-      </div>
     </section>
+    <fieldset slot="footer" class="access-actions" [disabled]="busy()" aria-label="Account actions">
+      <i-dialog-actions
+        cancelLabel="Sign out"
+        submitLabel="Sign in again"
+        [submitDisabled]="busy()"
+        (cancelEvent)="signOut()"
+        (submitEvent)="signIn()"
+      />
+    </fieldset>
   `,
   styleUrl: './auth-status.scss',
 })

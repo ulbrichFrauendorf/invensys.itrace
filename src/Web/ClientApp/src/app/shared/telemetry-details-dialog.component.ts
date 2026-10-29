@@ -1,6 +1,5 @@
-import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { IDynamicDialogRef, IButton, ICard } from 'invensys-ng';
+import { IDynamicDialogRef, ICard, IDialogActions } from 'invensys-ng';
 
 export interface TelemetryDetailRow {
   label: string;
@@ -17,7 +16,7 @@ export interface TelemetryDetailsDialogData {
 
 @Component({
   selector: 'app-telemetry-details-dialog',
-  imports: [CommonModule, IButton, ICard],
+  imports: [ICard, IDialogActions],
   template: `
     <div class="error-details">
       @if (data.message) {
@@ -56,14 +55,16 @@ export interface TelemetryDetailsDialogData {
           </dl>
         </i-card>
       }
-      @if (data.copyAndClose) {
-        <div class="dialog-actions">
-          <i-button icon="pi pi-info-circle" severity="info" (clicked)="copyAndCloseStackTrace()">
-            Copy and close
-          </i-button>
-        </div>
-      }
     </div>
+    <i-dialog-actions
+      slot="footer"
+      cancelLabel="Close"
+      submitLabel="Copy and close"
+      severity="info"
+      [showSubmit]="!!data.copyAndClose"
+      (cancelEvent)="close()"
+      (submitEvent)="copyAndCloseStackTrace()"
+    />
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
@@ -72,12 +73,6 @@ export interface TelemetryDetailsDialogData {
         display: grid;
         gap: 1rem;
         min-width: 0;
-        .dialog-actions {
-          display: flex;
-          justify-content: flex-end;
-          border-top: 1px solid var(--surface-border);
-          padding-top: 1rem;
-        }
         .message {
           white-space: pre-wrap;
           overflow-wrap: anywhere;
@@ -130,6 +125,10 @@ export interface TelemetryDetailsDialogData {
 export class TelemetryDetailsDialogComponent {
   data: TelemetryDetailsDialogData = { details: [] };
   dialogRef?: IDynamicDialogRef;
+
+  protected close(): void {
+    this.dialogRef?.close();
+  }
 
   protected async copyAndCloseStackTrace(): Promise<void> {
     try {

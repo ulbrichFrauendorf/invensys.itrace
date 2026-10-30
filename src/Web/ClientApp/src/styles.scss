@@ -33,8 +33,15 @@ i-chart {
 [iPageHeaderActions].page-actions {
   --header-action-size: 42px;
 
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: row;
+  > i-select {
+    flex: 1;
+    min-width: 0;
+  }
+  > i-button {
+    flex: 0 0 auto;
+  }
   align-items: end;
   gap: 0.75rem;
   width: 20rem;

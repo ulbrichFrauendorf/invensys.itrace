@@ -1,6 +1,5 @@
-import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { IDynamicDialogRef, IButton, ICard } from 'invensys-ng';
+import { IDynamicDialogRef, ICard, IDialogActions } from 'invensys-ng';
 
 export interface TelemetryDetailRow {
   label: string;
@@ -17,7 +16,7 @@ export interface TelemetryDetailsDialogData {
 
 @Component({
   selector: 'app-telemetry-details-dialog',
-  imports: [CommonModule, IButton, ICard],
+  imports: [ICard, IDialogActions],
   template: `
     <div class="error-details">
       @if (data.message) {
@@ -56,28 +55,25 @@ export interface TelemetryDetailsDialogData {
           </dl>
         </i-card>
       }
-      @if (data.copyAndClose) {
-        <div class="dialog-actions">
-          <i-button icon="pi pi-info-circle" severity="info" (clicked)="copyAndCloseStackTrace()">
-            Copy and close
-          </i-button>
-        </div>
-      }
     </div>
+    <i-dialog-actions
+      slot="footer"
+      cancelLabel="Close"
+      submitLabel="Copy and close"
+      severity="info"
+      [showSubmit]="!!data.copyAndClose"
+      (cancelEvent)="close()"
+      (submitEvent)="copyAndCloseStackTrace()"
+    />
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       .error-details {
-        display: grid;
+        display: flex;
+        flex-direction: column;
         gap: 1rem;
         min-width: 0;
-        .dialog-actions {
-          display: flex;
-          justify-content: flex-end;
-          border-top: 1px solid var(--surface-border);
-          padding-top: 1rem;
-        }
         .message {
           white-space: pre-wrap;
           overflow-wrap: anywhere;
@@ -100,14 +96,20 @@ export interface TelemetryDetailsDialogData {
           tab-size: 4;
         }
         .telemetry-details {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+          display: flex;
+          flex-direction: row;
+          flex-wrap: wrap;
+          > div {
+            flex: 1 1 256px;
+            min-width: 0;
+          }
           gap: 1rem;
           margin: 0;
           div {
             min-width: 0;
             border-bottom: 1px solid var(--surface-border);
-            display: grid;
+            display: flex;
+            flex-direction: column;
             align-content: start;
             gap: 0.35rem;
             padding-bottom: 0.75rem;
@@ -130,6 +132,10 @@ export interface TelemetryDetailsDialogData {
 export class TelemetryDetailsDialogComponent {
   data: TelemetryDetailsDialogData = { details: [] };
   dialogRef?: IDynamicDialogRef;
+
+  protected close(): void {
+    this.dialogRef?.close();
+  }
 
   protected async copyAndCloseStackTrace(): Promise<void> {
     try {

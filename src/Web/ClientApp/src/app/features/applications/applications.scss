@@ -1,38 +1,66 @@
 :host {
   .page-sections {
-    display: grid;
-    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     min-width: 0;
   }
 
   display: block;
   min-width: 0;
   .form-grid {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: minmax(0, 2fr) minmax(20rem, 1fr);
+    display: flex;
+    gap: 16px;
+    flex-direction: row;
+    > :first-child {
+      flex: 2 1 0;
+      min-width: 0;
+    }
+    > :last-child {
+      flex: 1 1 0;
+      min-width: 320px;
+    }
     @media (max-width: 900px) {
-      grid-template-columns: 1fr;
+      flex-direction: column;
+      > *,
+      > :first-child,
+      > :last-child {
+        flex: 0 0 auto;
+        min-width: 0;
+      }
     }
   }
   .registration-form {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    gap: 16px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    > * {
+      flex: 0 0 calc((100% - 16px) / 2);
+      min-width: 0;
+      box-sizing: border-box;
+    }
     i-button {
       align-self: end;
     }
     @media (max-width: 900px) {
-      grid-template-columns: 1fr;
+      flex-direction: column;
+      > *,
+      > :first-child,
+      > :last-child {
+        flex: 0 0 auto;
+        min-width: 0;
+      }
     }
   }
   .dsn-box {
-    display: grid;
-    gap: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
   .registration-error {
     color: var(--color-danger);
-    grid-column: 1 / -1;
+    flex-basis: 100%;
     margin: 0;
   }
   code {

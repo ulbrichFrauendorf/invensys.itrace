@@ -70,7 +70,8 @@ export interface TelemetryDetailsDialogData {
   styles: [
     `
       .error-details {
-        display: grid;
+        display: flex;
+        flex-direction: column;
         gap: 1rem;
         min-width: 0;
         .message {
@@ -95,14 +96,20 @@ export interface TelemetryDetailsDialogData {
           tab-size: 4;
         }
         .telemetry-details {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+          display: flex;
+          flex-direction: row;
+          flex-wrap: wrap;
+          > div {
+            flex: 1 1 256px;
+            min-width: 0;
+          }
           gap: 1rem;
           margin: 0;
           div {
             min-width: 0;
             border-bottom: 1px solid var(--surface-border);
-            display: grid;
+            display: flex;
+            flex-direction: column;
             align-content: start;
             gap: 0.35rem;
             padding-bottom: 0.75rem;
